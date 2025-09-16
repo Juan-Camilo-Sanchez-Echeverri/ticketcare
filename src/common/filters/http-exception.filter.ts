@@ -42,11 +42,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
         : 'Internal server error';
 
     const errorMessage = this.extractMessage(exception);
-    const errorCode = this.extractCode(exceptionResponse);
+
     const errors = this.extractErrors(exceptionResponse);
 
     const responseBody: ErrorsResponse = {
-      code: errorCode,
       message: errorMessage,
       details: errors,
     };
@@ -56,13 +55,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
   private extractMessage(exception: Error | HttpException): string {
     return exception.constructor.name;
-  }
-
-  private extractCode(response: string | object): number | null {
-    if (typeof response === 'object' && 'code' in response) {
-      return response.code as number;
-    }
-    return null;
   }
 
   private extractErrors(response: string | object): Array<ErrorsDetails> {

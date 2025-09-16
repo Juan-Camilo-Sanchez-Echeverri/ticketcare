@@ -5,6 +5,5 @@ export interface ErrorsDetails {
 
 export class ErrorsResponse {
   message: string;
-  code: number | null = null;
   details?: Array<ErrorsDetails> = [];
 }
