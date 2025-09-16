@@ -1,6 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 
-import { ConsoleLogger, VersioningType } from '@nestjs/common';
+import {
+  ConsoleLogger,
+  UnprocessableEntityException,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 
 import { NestExpressApplication } from '@nestjs/platform-express';
 
@@ -8,6 +13,8 @@ import compression from 'compression';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module';
+
+import { getClassValidatorErrors } from '@common/helpers';
 
 import { envs } from '@configs';
 
@@ -26,6 +33,20 @@ async function bootstrap() {
 
   app.set('trust proxy', true);
   app.set('query parser', 'extended');
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      exceptionFactory: (validationErrors): UnprocessableEntityException => {
+        const message = 'Validation failed';
+        const errors = getClassValidatorErrors(validationErrors);
+
+        return new UnprocessableEntityException({ message, errors });
+      },
+    }),
+  );
 
   /**
    * Set the global prefix, enable cors and use global pipes.
