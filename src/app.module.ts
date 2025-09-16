@@ -6,14 +6,17 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { ThrottlerGuard, ThrottlerModule, seconds } from '@nestjs/throttler';
 
+import { MongooseConfigService } from '@configs';
+
 import { LoggerMiddleware } from '@common/middlewares';
+
+import { ParseMongoIdPipe } from '@common/pipes';
 
 import { HttpExceptionFilter } from '@common/filters';
 
-import { MongooseConfigService } from '@configs';
-
 import { CommonModule } from '@common/common.module';
-import { ParseMongoIdPipe } from '@common/pipes';
+
+import { UsersModule } from '@modules/users/users.module';
 
 @Module({
   imports: [
@@ -29,6 +32,7 @@ import { ParseMongoIdPipe } from '@common/pipes';
       errorMessage: 'Too many requests, please try again later.',
     }),
     CommonModule,
+    UsersModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
