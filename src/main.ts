@@ -16,7 +16,7 @@ import { AppModule } from './app.module';
 
 import { getClassValidatorErrors } from '@common/helpers';
 
-import { envs } from '@configs';
+import { envs, setupSwagger } from '@configs';
 
 const logger = new ConsoleLogger({ prefix: 'TicketCare' });
 
@@ -65,9 +65,13 @@ async function bootstrap() {
   app.enableCors();
 
   /**
+   * Create the swagger document and setup the swagger module.
+   */
+  setupSwagger(app);
+
+  /**
    * Start the application.
    */
-
   await app.listen(envs.port);
   logger.log(`Server running on ${await app.getUrl()} 🚀 in ${envs.nodeEnv}`);
 }
