@@ -6,7 +6,6 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
-  Logger,
 } from '@nestjs/common';
 
 import { ExecModes } from '@common/enums';
@@ -15,9 +14,11 @@ import { envs } from '@configs';
 
 import { ErrorsDetails, ErrorsResponse } from '../responses/errors.response';
 
+import { LogService } from '@modules/log/log.service';
+
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  logger = new Logger(HttpExceptionFilter.name, { timestamp: true });
+  constructor(private readonly logService: LogService) {}
 
   catch(exception: Error | HttpException, host: ArgumentsHost): Response {
     const ctx = host.switchToHttp();
@@ -32,7 +33,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const isProdEnvironment = envs.nodeEnv !== ExecModes.LOCAL;
 
     if (isInternalServerError || !isProdEnvironment) {
-      this.logger.error(exception.message, exception.stack);
+      this.logService.errorLog(exception);
     }
 
     const exceptionResponse =
