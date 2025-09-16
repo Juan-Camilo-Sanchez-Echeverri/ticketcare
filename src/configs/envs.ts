@@ -1,6 +1,7 @@
 import { resolve } from 'path';
 
 import { config } from 'dotenv';
+
 import joi from 'joi';
 
 import { ExecModes } from '@common/enums';
@@ -16,15 +17,20 @@ config({ path: envPath });
 interface EnvVars {
   PORT: number;
   NODE_ENV: ExecModes;
+
+  DB_URL: string;
 }
 
 const envSchema = joi
   .object({
     PORT: joi.number().required(),
+
     NODE_ENV: joi
       .string()
       .valid(...Object.values(ExecModes))
-      .default(ExecModes.LOCAL),
+      .required(),
+
+    DB_URL: joi.string().required(),
   })
   .unknown(true);
 
@@ -39,4 +45,6 @@ const envVars: EnvVars = value;
 export const envs = {
   port: envVars.PORT,
   nodeEnv: envVars.NODE_ENV,
+
+  dbUrl: envVars.DB_URL,
 };
