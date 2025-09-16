@@ -11,15 +11,6 @@ import { ErrorsResponse } from '../../responses';
 const ERROR_SCHEMA: SchemaObject = {
   type: 'object',
   properties: {
-    code: { type: 'number' },
-    message: { type: 'string' },
-  },
-};
-
-const ERROR_NULL_SCHEMA: SchemaObject = {
-  type: 'object',
-  properties: {
-    code: { type: 'null' },
     message: { type: 'string' },
   },
 };
@@ -39,7 +30,7 @@ export const ApiNotFoundResponseWrapper = (example: ErrorsResponse) => {
 export const ApiConflictResponseWrapper = (example: ErrorsResponse) => {
   return ApiConflictResponse({
     description: 'Conflict – duplicate resource or business rule violation',
-    schema: ERROR_NULL_SCHEMA,
+    schema: ERROR_SCHEMA,
     content: {
       'application/json': {
         example,
@@ -54,14 +45,12 @@ export const ApiValidationResponseWrapper = (messagesExample: string[]) => {
     schema: {
       type: 'object',
       properties: {
-        code: { type: 'null' },
         message: { type: 'array', items: { type: 'string' } },
       },
     },
     content: {
       'application/json': {
         example: {
-          code: null,
           message: messagesExample,
         },
       },
