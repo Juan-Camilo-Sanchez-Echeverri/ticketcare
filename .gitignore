@@ -3,7 +3,9 @@
 
 ### dotenv ###
 .env
-.env.*
+.env.local
+.env.test
+.env.development
 
 ### Executable ###
 *.app
