@@ -19,6 +19,14 @@ interface EnvVars {
   NODE_ENV: ExecModes;
 
   DB_URL: string;
+
+  JWT_SECRET: string;
+  JWT_EXPIRATION: string;
+
+  USER_NOTIFICATIONS: string;
+  PASSWORD_NOTIFICATIONS: string;
+
+  URL_SERVER: string;
 }
 
 const envSchema = joi
@@ -31,6 +39,14 @@ const envSchema = joi
       .required(),
 
     DB_URL: joi.string().required(),
+
+    JWT_SECRET: joi.string().required(),
+    JWT_EXPIRATION: joi.string().required(),
+
+    USER_NOTIFICATIONS: joi.string().required(),
+    PASSWORD_NOTIFICATIONS: joi.string().required(),
+
+    URL_SERVER: joi.string().uri().required(),
   })
   .unknown(true);
 
@@ -47,4 +63,12 @@ export const envs = {
   nodeEnv: envVars.NODE_ENV,
 
   dbUrl: envVars.DB_URL,
+
+  jwtSecret: envVars.JWT_SECRET,
+  jwtExpiration: envVars.JWT_EXPIRATION,
+
+  userNotifications: envVars.USER_NOTIFICATIONS,
+  passwordNotifications: envVars.PASSWORD_NOTIFICATIONS,
+
+  urlServer: envVars.URL_SERVER,
 };
