@@ -1,3 +1,5 @@
+import { join } from 'path';
+
 import { NestFactory } from '@nestjs/core';
 
 import {
@@ -33,6 +35,10 @@ async function bootstrap() {
 
   app.set('trust proxy', true);
   app.set('query parser', 'extended');
+
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads',
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
