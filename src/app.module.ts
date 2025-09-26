@@ -17,6 +17,8 @@ import { HttpExceptionFilter } from '@common/filters';
 import { CommonModule } from '@common/common.module';
 
 import { UsersModule } from '@modules/users/users.module';
+import { AuthModule } from '@modules/auth/auth.module';
+import { EmailRequestModule } from '@modules/email-request/email-request.module';
 
 @Module({
   imports: [
@@ -32,7 +34,11 @@ import { UsersModule } from '@modules/users/users.module';
       errorMessage: 'Too many requests, please try again later.',
     }),
     CommonModule,
+
+    // Application modules
     UsersModule,
+    AuthModule,
+    EmailRequestModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
