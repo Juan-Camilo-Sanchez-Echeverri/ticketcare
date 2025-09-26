@@ -23,13 +23,16 @@ export class User extends BaseSchema {
   @Prop({ unique: true, trim: true })
   email: string;
 
+  @Prop({ required: true })
+  password: string;
+
   @Prop({ unique: true, trim: true })
   phone: string;
 
   @Prop({ enum: Status, default: Status.ACTIVE, type: String })
   status: Status;
 
-  @Prop({ enum: UserRole, type: String })
+  @Prop()
   roles: UserRole[];
 
   @Prop({ default: false })
@@ -46,3 +49,10 @@ export class User extends BaseSchema {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.set('toJSON', {
+  transform: (_doc, ret) => {
+    delete (ret as any).password;
+    return ret;
+  },
+});
