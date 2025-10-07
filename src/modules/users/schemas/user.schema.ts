@@ -15,7 +15,7 @@ export type UserDocument = HydratedDocument<User>;
 })
 export class User extends BaseSchema {
   @Prop({ trim: true })
-  firstName: string;
+  name: string;
 
   @Prop({ trim: true })
   lastName: string;
@@ -33,26 +33,23 @@ export class User extends BaseSchema {
   status: Status;
 
   @Prop()
-  roles: UserRole[];
+  role: UserRole;
 
   @Prop({ default: false })
   online: boolean;
-
-  @Prop({ type: Date })
-  lastLogin: Date;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   })
-  createdBy: Pick<UserDocument, '_id' | 'firstName' | 'lastName' | 'email'>;
+  modifiedBy: Pick<UserDocument, '_id' | 'name' | 'lastName' | 'email'>;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
 UserSchema.set('toJSON', {
   transform: (_doc, ret) => {
-    delete (ret as any).password;
+    delete ret.password;
     return ret;
   },
 });

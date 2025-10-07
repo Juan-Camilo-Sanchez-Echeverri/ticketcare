@@ -4,7 +4,7 @@ import { CreatedByResponse } from '@common/responses';
 
 import { User } from '../schemas/user.schema';
 
-export class UserResponse extends OmitType(User, ['createdBy'] as const) {
+export class UserResponse extends OmitType(User, ['modifiedBy'] as const) {
   /**
    *  Identifier for the user.
    */
@@ -13,5 +13,5 @@ export class UserResponse extends OmitType(User, ['createdBy'] as const) {
   /**
    *  Created by information of the user.
    */
-  createdBy: CreatedByResponse;
+  modifiedBy: CreatedByResponse;
 }

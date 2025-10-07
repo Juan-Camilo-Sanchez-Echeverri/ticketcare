@@ -3,7 +3,7 @@ import { PickType } from '@nestjs/swagger';
 import { User } from '@modules/users/schemas/user.schema';
 
 export class CreatedByResponse extends PickType(User, [
-  'firstName',
+  'name',
   'lastName',
   'email',
 ] as const) {

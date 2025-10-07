@@ -1,12 +1,4 @@
-import {
-  ArrayUnique,
-  IsArray,
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsPhoneNumber,
-} from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsPhoneNumber } from 'class-validator';
 
 import { IsNotBlank, IsPassword } from '@common/decorators';
 
@@ -18,7 +10,7 @@ export class CreateUserDto extends BaseDto {
    * The first name of the user
    */
   @IsNotBlank()
-  readonly firstName: string;
+  readonly name: string;
 
   /**
    * The last name of the user
@@ -48,9 +40,6 @@ export class CreateUserDto extends BaseDto {
   /**
    * The role of the user
    */
-  @IsArray()
-  @IsNotEmpty()
-  @ArrayUnique()
-  @IsEnum(UserRole, { each: true })
-  readonly roles: UserRole[];
+  @IsEnum(UserRole)
+  readonly role: UserRole;
 }
