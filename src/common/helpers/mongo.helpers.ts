@@ -1,7 +1,11 @@
 import { NextFunction } from 'express';
 
+import { Types } from 'mongoose';
+
 import {
+  BadRequestException,
   ConflictException,
+  ForbiddenException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 
@@ -41,3 +45,11 @@ export function validateMongo<T>(
     next(error);
   }
 }
+
+export const validateObjectId = (id: string) => {
+  if (!id) throw new ForbiddenException('The required id');
+
+  if (!Types.ObjectId.isValid(id)) {
+    throw new BadRequestException('The id is not valid');
+  }
+};

@@ -8,5 +8,5 @@ export class BaseDto {
    */
   @Allow()
   @ApiHideProperty()
-  createdBy: string | null;
+  modifiedBy: string | null;
 }
