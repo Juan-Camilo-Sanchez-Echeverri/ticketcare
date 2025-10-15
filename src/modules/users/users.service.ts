@@ -19,7 +19,11 @@ import { UserDocument } from './schemas/user.schema';
 @Injectable()
 export class UsersService implements ICrudService<UserDocument> {
   private readonly pathsPopulate: PopulateOptions[] = [
-    { path: 'createdBy', select: 'firstName lastName email phone' },
+    { path: 'modifiedBy', select: 'name lastName role' },
+    { path: 'details.supportDepartments', select: 'name' },
+    { path: 'details.supportLevels', select: 'name' },
+    { path: 'details.businessContractors', select: 'name' },
+    { path: 'details.businessClients', select: 'name' },
   ];
 
   constructor(private readonly usersRepository: UsersRepository) {}

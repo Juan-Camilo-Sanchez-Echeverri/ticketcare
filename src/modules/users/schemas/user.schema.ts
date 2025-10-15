@@ -5,6 +5,8 @@ import { Status, UserRole } from '@common/enums';
 
 import { BaseSchema } from '@common/database';
 
+import { Details, DetailsSchema } from './details.schema';
+
 export type UserDocument = HydratedDocument<User>;
 
 @Schema({
@@ -34,6 +36,9 @@ export class User extends BaseSchema {
 
   @Prop()
   role: UserRole;
+
+  @Prop({ type: DetailsSchema, _id: false })
+  details: Details;
 
   @Prop({ default: false })
   online: boolean;
