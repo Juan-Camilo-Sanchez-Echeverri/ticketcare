@@ -20,6 +20,7 @@ import { UsersModule } from '@modules/users/users.module';
 import { AuthModule } from '@modules/auth/auth.module';
 import { EmailRequestModule } from '@modules/email-request/email-request.module';
 import { BusinessContractorsModule } from '@modules/business-contractors/business-contractors.module';
+import { BusinessClientsModule } from '@modules/business-clients/business-clients.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { BusinessContractorsModule } from '@modules/business-contractors/busines
     AuthModule,
     EmailRequestModule,
     BusinessContractorsModule,
+    BusinessClientsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
