@@ -21,6 +21,8 @@ import { AuthModule } from '@modules/auth/auth.module';
 import { EmailRequestModule } from '@modules/email-request/email-request.module';
 import { BusinessContractorsModule } from '@modules/business-contractors/business-contractors.module';
 import { BusinessClientsModule } from '@modules/business-clients/business-clients.module';
+import { SupportDepartmentsModule } from '@modules/support-departments/support-departments.module';
+import { SupportLevelsModule } from '@modules/support-levels/support-levels.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { BusinessClientsModule } from '@modules/business-clients/business-client
     EmailRequestModule,
     BusinessContractorsModule,
     BusinessClientsModule,
+    SupportDepartmentsModule,
+    SupportLevelsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
