@@ -24,7 +24,7 @@ export const imageFilter = (
 };
 
 export const fileFilter = (
-  _req: Express.Request,
+  _req: Express.Request | null,
   file: Express.Multer.File,
   callback: (error: string | null, isValid: boolean) => void,
 ) => {

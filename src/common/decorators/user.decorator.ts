@@ -10,8 +10,6 @@ export const CurrentUser = createParamDecorator(
     const request = ctx.switchToHttp().getRequest<Request>();
     const user = extractUserFromRequest(request);
 
-    if (!user) return null;
-
     return data ? (user[data] as keyof UserDocument) : user;
   },
 );

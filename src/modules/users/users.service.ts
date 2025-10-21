@@ -64,6 +64,14 @@ export class UsersService implements ICrudService<UserDocument> {
     return await this.usersRepository.findOne(query);
   }
 
+  async findByQuery(query: FilterUsersDto['data']): Promise<UserDocument[]> {
+    return await this.usersRepository.find(
+      query,
+      {},
+      { populate: this.pathsPopulate },
+    );
+  }
+
   async update(
     id: string,
     updateUserDto: UpdateUserDto,

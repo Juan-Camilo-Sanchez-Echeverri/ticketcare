@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 
 import { envs } from '@configs/envs';
 
@@ -17,7 +17,7 @@ import { AuthService } from './auth.service';
     EmailRequestModule,
     JwtModule.registerAsync({
       global: true,
-      useFactory: () => {
+      useFactory: (): JwtModuleOptions => {
         return {
           secret: envs.jwtSecret,
           signOptions: { expiresIn: envs.jwtExpiration },

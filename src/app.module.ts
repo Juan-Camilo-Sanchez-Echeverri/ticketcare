@@ -6,6 +6,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { ThrottlerGuard, ThrottlerModule, seconds } from '@nestjs/throttler';
 
+import { EventEmitterModule } from '@nestjs/event-emitter';
+
 import { MongooseConfigService } from '@configs';
 
 import { LoggerMiddleware } from '@common/middlewares';
@@ -16,13 +18,14 @@ import { HttpExceptionFilter } from '@common/filters';
 
 import { CommonModule } from '@common/common.module';
 
-import { UsersModule } from '@modules/users/users.module';
 import { AuthModule } from '@modules/auth/auth.module';
-import { EmailRequestModule } from '@modules/email-request/email-request.module';
-import { BusinessContractorsModule } from '@modules/business-contractors/business-contractors.module';
 import { BusinessClientsModule } from '@modules/business-clients/business-clients.module';
+import { BusinessContractorsModule } from '@modules/business-contractors/business-contractors.module';
+import { EmailRequestModule } from '@modules/email-request/email-request.module';
 import { SupportDepartmentsModule } from '@modules/support-departments/support-departments.module';
 import { SupportLevelsModule } from '@modules/support-levels/support-levels.module';
+import { TicketsModule } from '@modules/tickets/tickets.module';
+import { UsersModule } from '@modules/users/users.module';
 
 @Module({
   imports: [
@@ -37,6 +40,7 @@ import { SupportLevelsModule } from '@modules/support-levels/support-levels.modu
       ],
       errorMessage: 'Too many requests, please try again later.',
     }),
+    EventEmitterModule.forRoot({ verboseMemoryLeak: true }),
     CommonModule,
 
     // Application modules
@@ -47,6 +51,7 @@ import { SupportLevelsModule } from '@modules/support-levels/support-levels.modu
     BusinessClientsModule,
     SupportDepartmentsModule,
     SupportLevelsModule,
+    TicketsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
