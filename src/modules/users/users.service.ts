@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 
 import { hash } from 'bcrypt';
 
@@ -6,7 +6,9 @@ import { PaginateResult, PopulateOptions } from 'mongoose';
 
 import { ICrudService } from '@common/interfaces';
 
-import { Status } from '@common/enums';
+import { Status, UserRole } from '@common/enums';
+
+import { envs } from '@configs/envs';
 
 import { CreateUserDto, FilterUsersDto, UpdateUserDto } from './dto';
 
@@ -17,7 +19,7 @@ import { UsersErrors } from './errors/users.errors';
 import { UserDocument } from './schemas/user.schema';
 
 @Injectable()
-export class UsersService implements ICrudService<UserDocument> {
+export class UsersService implements ICrudService<UserDocument>, OnModuleInit {
   private readonly pathsPopulate: PopulateOptions[] = [
     { path: 'modifiedBy', select: 'name lastName role' },
     { path: 'details.supportDepartments', select: 'name' },
@@ -27,6 +29,21 @@ export class UsersService implements ICrudService<UserDocument> {
   ];
 
   constructor(private readonly usersRepository: UsersRepository) {}
+
+  async onModuleInit(): Promise<void> {
+    const users = await this.usersRepository.countDocuments();
+    if (users === 0) {
+      await this.create({
+        name: envs.defaultUserName,
+        lastName: envs.defaultUserLastName,
+        email: envs.defaultUserEmail,
+        phone: envs.defaultUserPhone,
+        role: UserRole.SuperUser,
+        password: envs.defaultUserPassword,
+        modifiedBy: null,
+      });
+    }
+  }
 
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {
     const hashedPassword = await hash(createUserDto.password, 10);

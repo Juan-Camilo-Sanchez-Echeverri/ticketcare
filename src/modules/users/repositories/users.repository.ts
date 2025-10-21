@@ -15,4 +15,8 @@ export class UsersRepository extends EntityRepository<UserDocument> {
   ) {
     super(userModel);
   }
+
+  async countDocuments(): Promise<number> {
+    return this.userModel.countDocuments().exec();
+  }
 }

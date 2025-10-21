@@ -27,6 +27,12 @@ interface EnvVars {
   PASSWORD_NOTIFICATIONS: string;
 
   URL_SERVER: string;
+
+  DEFAULT_USER_NAME: string;
+  DEFAULT_USER_LAST_NAME: string;
+  DEFAULT_USER_EMAIL: string;
+  DEFAULT_USER_PHONE: string;
+  DEFAULT_USER_PASSWORD: string;
 }
 
 const envSchema = joi
@@ -47,6 +53,12 @@ const envSchema = joi
     PASSWORD_NOTIFICATIONS: joi.string().required(),
 
     URL_SERVER: joi.string().uri().required(),
+
+    DEFAULT_USER_NAME: joi.string().required(),
+    DEFAULT_USER_LAST_NAME: joi.string().required(),
+    DEFAULT_USER_EMAIL: joi.string().required(),
+    DEFAULT_USER_PHONE: joi.string().required(),
+    DEFAULT_USER_PASSWORD: joi.string().required(),
   })
   .unknown(true);
 
@@ -71,4 +83,10 @@ export const envs = {
   passwordNotifications: envVars.PASSWORD_NOTIFICATIONS,
 
   urlServer: envVars.URL_SERVER,
+
+  defaultUserName: envVars.DEFAULT_USER_NAME,
+  defaultUserLastName: envVars.DEFAULT_USER_LAST_NAME,
+  defaultUserEmail: envVars.DEFAULT_USER_EMAIL,
+  defaultUserPhone: envVars.DEFAULT_USER_PHONE,
+  defaultUserPassword: envVars.DEFAULT_USER_PASSWORD,
 };
