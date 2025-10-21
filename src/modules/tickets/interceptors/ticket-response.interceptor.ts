@@ -66,7 +66,7 @@ export class TicketResponseInterceptor implements NestInterceptor {
     if (user.role === UserRole.SuperUser) return ticket;
 
     const filterContractors = ticket.businessClient.businessContractors.filter(
-      (contractor) => contractor.id === ticket.businessContractor._id,
+      (contractor) => contractor._id === ticket.businessContractor._id,
     );
 
     const ticketCopy = {

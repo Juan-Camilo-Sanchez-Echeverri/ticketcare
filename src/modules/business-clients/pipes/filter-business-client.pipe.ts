@@ -1,23 +1,15 @@
-import type { Request } from 'express';
+import { Injectable, PipeTransform } from '@nestjs/common';
 
-import { REQUEST } from '@nestjs/core';
-import { Inject, Injectable, PipeTransform } from '@nestjs/common';
-
-import { Status } from '@common/enums';
-
-import { PaginationClientDto } from '../dto';
+import { FilterBusinessClientDto } from '../dto';
 
 @Injectable()
 export class FilterBusinessClientPipe implements PipeTransform {
-  constructor(@Inject(REQUEST) private readonly request: Request) {}
-  transform(value: PaginationClientDto): PaginationClientDto {
-    const contractor = this.request.params.contractorId;
+  transform(value: FilterBusinessClientDto): FilterBusinessClientDto {
+    const { contractor } = value;
 
-    value.data = {
-      ...value.data,
-      businessContractors: { $elemMatch: { $eq: contractor } },
-      status: Status.ACTIVE,
-    };
+    if (contractor) {
+      value.data.businessContractors = { $elemMatch: { $eq: contractor } };
+    }
 
     return value;
   }

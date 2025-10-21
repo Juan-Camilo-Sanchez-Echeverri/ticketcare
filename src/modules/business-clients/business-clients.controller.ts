@@ -6,20 +6,24 @@ import {
   Patch,
   Param,
   Delete,
-  HttpStatus,
-  HttpCode,
   Query,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 
-import { AllRoles, Roles } from '@common/decorators';
-
-import { FilterDto } from '@common/dto';
+import {
+  AllRoles,
+  ApiCreatedResponseWrapper,
+  ApiNoContentResponseWrapper,
+  ApiOkResponseWrapper,
+  Roles,
+} from '@common/decorators';
 
 import { ApiTags } from '@nestjs/swagger';
 
 import {
   CreateBusinessClientDto,
-  PaginationClientDto,
+  FilterBusinessClientDto,
   UpdateBusinessClientDto,
 } from './dto';
 
@@ -28,6 +32,7 @@ import { FilterBusinessClientPipe } from './pipes';
 import { BusinessClientsService } from './business-clients.service';
 
 import { BusinessClientDocument } from './schemas/business-client.schema';
+import { BusinessClientResponse } from './responses/business-clients.response';
 
 @ApiTags('business-clients')
 @Controller('business-clients')
@@ -36,15 +41,47 @@ export class BusinessClientsController {
     private readonly businessClientsService: BusinessClientsService,
   ) {}
 
+  /**
+   * Get a paginated list of business clients with filters.
+   * @remarks
+   * Retrieves all business clients with pagination and filtering capabilities.
+   *
+   * Allows only <b>SUPERUSER</b> to access this endpoint.
+   */
+  @Get()
+  @Roles('SuperUser')
+  @ApiOkResponseWrapper(BusinessClientResponse, { isArray: true })
+  async filter(
+    @Query(FilterBusinessClientPipe) query: FilterBusinessClientDto,
+  ) {
+    return await this.businessClientsService.findPaginate(query);
+  }
+
+  /**
+   * Get a single business client by its id.
+   * @remarks
+   * Retrieves a specific business client using its unique identifier.
+   *
+   * Allows all authenticated users to retrieve business client information.
+   */
   @Get(':clientId')
   @AllRoles()
+  @ApiOkResponseWrapper(BusinessClientResponse, { isArray: false })
   async findOne(
     @Param('clientId') clientId: string,
   ): Promise<BusinessClientDocument> {
     return await this.businessClientsService.findOneById(clientId);
   }
 
+  /**
+   * Create a new business client.
+   * @remarks
+   * Creates a new business client with the provided information.
+   *
+   * Allows <b>SUPERUSER</b>, <b>ADMIN</b> and <b>COORDINATOR</b> users to create business clients.
+   */
   @Post()
+  @ApiCreatedResponseWrapper(BusinessClientResponse)
   @Roles('SuperUser', 'Admin', 'Coordinator')
   async create(
     @Body() createBusinessClientDto: CreateBusinessClientDto,
@@ -52,26 +89,16 @@ export class BusinessClientsController {
     return await this.businessClientsService.create(createBusinessClientDto);
   }
 
-  @Get('filter')
-  @Roles('SuperUser')
-  @HttpCode(HttpStatus.OK)
-  async filter(@Query() query: FilterDto<BusinessClientDocument>) {
-    return await this.businessClientsService.findPaginate(query);
-  }
-
-  @Get('self-clients/:contractorId')
-  @Roles('Admin', 'Coordinator')
-  @HttpCode(HttpStatus.OK)
-  async findSelfClients(
-    @Param('contractorId')
-    @Query(FilterBusinessClientPipe)
-    query: PaginationClientDto,
-  ) {
-    return await this.businessClientsService.findPaginate(query);
-  }
-
+  /**
+   * Update an existing business client.
+   * @remarks
+   * Updates the information of a specific business client using its unique identifier.
+   *
+   * Allows <b>SUPERUSER</b>, <b>ADMIN</b> and <b>COORDINATOR</b> users to update business clients.
+   */
   @Patch(':clientId')
   @Roles('SuperUser', 'Admin', 'Coordinator')
+  @ApiOkResponseWrapper(BusinessClientResponse, { isArray: false })
   async update(
     @Param('clientId') clientId: string,
     @Body() updateBusinessClientDto: UpdateBusinessClientDto,
@@ -82,8 +109,17 @@ export class BusinessClientsController {
     );
   }
 
+  /**
+   * Delete a business client.
+   * @remarks
+   * Removes a specific business client from the system using its unique identifier.
+   *
+   * Allows only <b>SUPERUSER</b> to delete business clients.
+   */
   @Delete(':clientId')
   @Roles('SuperUser')
+  @ApiNoContentResponseWrapper()
+  @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('clientId') id: string): Promise<BusinessClientDocument> {
     return await this.businessClientsService.remove(id);
   }

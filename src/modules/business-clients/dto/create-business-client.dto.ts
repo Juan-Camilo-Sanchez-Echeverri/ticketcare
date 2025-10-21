@@ -12,24 +12,20 @@ import {
 
 import { IsNotBlank } from '@common/decorators';
 import { Address, BaseDto } from '@common/dto';
-import { BusinessDocumentType, Status, TypeActivity } from '@common/enums';
+import { BusinessDocumentType, TypeActivity } from '@common/enums';
 
 export class CreateBusinessClientDto extends BaseDto {
-  @IsNotBlank({ message: 'name is required and is a string' })
+  @IsNotBlank()
   name: string;
 
   @IsEnum(BusinessDocumentType)
   documentType: BusinessDocumentType;
 
-  @IsNotBlank({ message: 'document is required and is a string' })
+  @IsNotBlank()
   document: string;
 
-  @IsNotBlank({ message: 'phone is required and is a string' })
+  @IsNotBlank()
   phone: string;
-
-  @IsOptional()
-  @IsEnum(Status)
-  status?: Status;
 
   @IsEmail()
   email: string;
@@ -39,9 +35,8 @@ export class CreateBusinessClientDto extends BaseDto {
   @IsMongoId({ each: true })
   businessContractors: string[];
 
-  @IsOptional()
   @IsEnum(TypeActivity)
-  typeActivity?: TypeActivity;
+  typeActivity: TypeActivity;
 
   @IsNotEmpty()
   @Type(() => Address)
