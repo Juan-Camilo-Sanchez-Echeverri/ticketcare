@@ -1,9 +1,17 @@
-import { IsEmail, IsEnum, IsOptional, IsPhoneNumber } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsPhoneNumber,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 import { IsNotBlank, IsPassword } from '@common/decorators';
 
 import { UserRole } from '@common/enums';
 import { BaseDto } from '@common/dto';
+import { UserDetailsDto } from './user-details.dto';
 
 export class CreateUserDto extends BaseDto {
   /**
@@ -42,4 +50,12 @@ export class CreateUserDto extends BaseDto {
    */
   @IsEnum(UserRole)
   readonly role: UserRole;
+
+  /**
+   * Additional user information (support departments, levels, contractors, and clients).
+   */
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UserDetailsDto)
+  readonly details?: UserDetailsDto;
 }
