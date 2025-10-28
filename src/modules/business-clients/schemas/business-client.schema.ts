@@ -48,7 +48,7 @@ export type BusinessClientDocument = HydratedDocument<BusinessClient>;
 export const BusinessClientSchema =
   SchemaFactory.createForClass(BusinessClient);
 
-BusinessClientSchema.pre('findOne', async function (next) {
+BusinessClientSchema.pre('findOneAndDelete', async function (next) {
   const query = this.getFilter() as { _id: string };
   const clientId = new Types.ObjectId(query._id);
 
