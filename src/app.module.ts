@@ -12,6 +12,9 @@ import { MongooseConfigService } from '@configs';
 
 import { LoggerMiddleware } from '@common/middlewares';
 
+import { AuthGuard } from '@modules/auth/guards/auth.guard';
+import { RolesGuard } from '@common/guards/roles.guard';
+
 import { ParseMongoIdPipe } from '@common/pipes';
 
 import { HttpExceptionFilter } from '@common/filters';
@@ -55,6 +58,8 @@ import { UsersModule } from '@modules/users/users.module';
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_PIPE, useClass: ParseMongoIdPipe },
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
   ],
