@@ -1,4 +1,5 @@
 import { UnsupportedMediaTypeException } from '@nestjs/common';
+
 import { FILE_EXTENSIONS, IMAGE_EXTENSIONS } from '../constants';
 
 export const imageFilter = (
