@@ -1,16 +1,13 @@
 import { OmitType, PickType } from '@nestjs/swagger';
 
-import { BusinessContractor } from '@modules/business-contractors/schemas/business-contractor.schema';
+import { BusinessContractorResponse } from '@modules/business-contractors/responses/business-contractor.response';
 
 import { BusinessClient } from '../schemas/business-client.schema';
 
-class BusinessContractorResponse extends PickType(BusinessContractor, [
-  'name',
-]) {
-  /**   *  Identifier for the business contractor.
-   */
-  _id: string;
-}
+class ContractorBusinessClientResponse extends PickType(
+  BusinessContractorResponse,
+  ['_id', 'name'],
+) {}
 
 export class BusinessClientResponse extends OmitType(BusinessClient, [
   'businessContractors',
@@ -23,5 +20,5 @@ export class BusinessClientResponse extends OmitType(BusinessClient, [
   /**
    *  List of associated business contractors.
    */
-  businessContractors: BusinessContractorResponse[];
+  businessContractors: ContractorBusinessClientResponse[];
 }
