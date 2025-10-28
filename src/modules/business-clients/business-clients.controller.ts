@@ -13,13 +13,14 @@ import {
 
 import {
   AllRoles,
+  ApiAuthResponses,
   ApiCreatedResponseWrapper,
   ApiNoContentResponseWrapper,
   ApiOkResponseWrapper,
   Roles,
 } from '@common/decorators';
 
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import {
   CreateBusinessClientDto,
@@ -34,6 +35,8 @@ import { BusinessClientsService } from './business-clients.service';
 import { BusinessClientDocument } from './schemas/business-client.schema';
 import { BusinessClientResponse } from './responses/business-clients.response';
 
+@ApiBearerAuth()
+@ApiAuthResponses()
 @ApiTags('business-clients')
 @Controller('business-clients')
 export class BusinessClientsController {
