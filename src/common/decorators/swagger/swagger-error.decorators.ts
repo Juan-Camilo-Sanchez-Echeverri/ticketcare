@@ -26,34 +26,26 @@ export const ApiAuthResponses = () => {
     ApiUnauthorizedResponse({
       description: 'Unauthorized (missing or invalid token)',
       schema: ERROR_SCHEMA,
-      content: {
-        'application/json': {
-          examples: {
-            missingToken: {
-              summary: 'No token provided',
-              value: AuthErrors.TOKEN_NOT_FOUND,
-            },
-            invalidToken: {
-              summary: 'Malformed token',
-              value: AuthErrors.INVALID_TOKEN,
-            },
-            expiredToken: {
-              summary: 'Token has expired',
-              value: AuthErrors.TOKEN_EXPIRED,
-            },
-          },
+      examples: {
+        missingToken: {
+          summary: 'No token provided',
+          value: AuthErrors.TOKEN_NOT_FOUND,
+        },
+        invalidToken: {
+          summary: 'Malformed token',
+          value: AuthErrors.INVALID_TOKEN,
+        },
+        expiredToken: {
+          summary: 'Token has expired',
+          value: AuthErrors.TOKEN_EXPIRED,
         },
       },
     }),
     ApiForbiddenResponse({
       description: 'Forbidden (insufficient role)',
       schema: ERROR_SCHEMA,
-      content: {
-        'application/json': {
-          example: {
-            message: 'Forbidden resource',
-          },
-        },
+      example: {
+        message: 'Forbidden resource',
       },
     }),
   );
@@ -63,11 +55,7 @@ export const ApiNotFoundResponseWrapper = (example: ErrorsResponse) => {
   return ApiNotFoundResponse({
     description: 'Not Found (resource not found)',
     schema: ERROR_SCHEMA,
-    content: {
-      'application/json': {
-        example,
-      },
-    },
+    example,
   });
 };
 
@@ -75,11 +63,7 @@ export const ApiConflictResponseWrapper = (example: ErrorsResponse) => {
   return ApiConflictResponse({
     description: 'Conflict – duplicate resource or business rule violation',
     schema: ERROR_SCHEMA,
-    content: {
-      'application/json': {
-        example,
-      },
-    },
+    example,
   });
 };
 
@@ -92,12 +76,8 @@ export const ApiValidationResponseWrapper = (messagesExample: string[]) => {
         message: { type: 'array', items: { type: 'string' } },
       },
     },
-    content: {
-      'application/json': {
-        example: {
-          message: messagesExample,
-        },
-      },
+    example: {
+      message: messagesExample,
     },
   });
 };
