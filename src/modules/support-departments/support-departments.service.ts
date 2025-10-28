@@ -1,109 +1,87 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { InjectModel } from '@nestjs/mongoose';
+import { PaginateResult, PopulateOptions } from 'mongoose';
 
-import { FilterQuery, type PaginateModel, PaginateResult } from 'mongoose';
-
-import { FilterDto } from '@common/dto';
 import { Status } from '@common/enums';
 
 import {
-  DELETE_SUPPORT_DEPARTMENT,
-  DEPARTMENT_NAME_EXIST,
-  INACTIVE_SUPPORT_DEPARTMENT,
-  NOT_EXIST_DEPARTMENT_SUPPORT,
-} from './constants';
+  CreateSupportDepartmentDto,
+  FilterSupportDepartmentDto,
+  UpdateSupportDepartmentDto,
+} from './dto';
 
-import { CreateSupportDepartmentDto, UpdateSupportDepartmentDto } from './dto';
+import { SupportDepartmentsRepository } from './repositories/support-departments.repository';
 
-import {
-  SupportDepartment,
-  SupportDepartmentDocument,
-} from './schemas/support-department.schema';
+import { SupportDepartmentDocument } from './schemas/support-department.schema';
+
+import { SupportDepartmentsErrors } from './errors/support-departments.errors';
 
 @Injectable()
 export class SupportDepartmentsService {
-  constructor(
-    @InjectModel(SupportDepartment.name)
-    private supportDepartmentModel: PaginateModel<SupportDepartment>,
-  ) {}
+  private readonly match = { status: Status.ACTIVE };
+
+  private readonly pathsPopulate: PopulateOptions[] = [
+    { path: 'businessContractor', match: this.match, select: 'name' },
+    { path: 'supportLevels', match: this.match, select: 'name' },
+    { path: 'defaultLevel', match: this.match, select: 'name' },
+  ];
+
+  constructor(private readonly repository: SupportDepartmentsRepository) {}
 
   async findOneById(id: string): Promise<SupportDepartmentDocument> {
-    const supportDepartment = await this.supportDepartmentModel.findById(id);
+    const supportDepartment = await this.repository.findOneById(id);
 
     if (!supportDepartment) {
-      throw new NotFoundException(NOT_EXIST_DEPARTMENT_SUPPORT);
+      throw new NotFoundException(SupportDepartmentsErrors.NOT_FOUND);
     }
 
     return this.populateDepartment(supportDepartment);
   }
 
   async findOneByQuery(
-    query: FilterQuery<SupportDepartmentDocument>,
+    query: FilterSupportDepartmentDto['data'],
   ): Promise<SupportDepartmentDocument | null> {
-    const department = await this.supportDepartmentModel.findOne(query);
+    const department = await this.repository.findOne(query);
 
     return department ? this.populateDepartment(department) : null;
   }
 
   async findPaginate(
-    filterDto: FilterDto<SupportDepartmentDocument>,
+    filterDto: FilterSupportDepartmentDto,
   ): Promise<PaginateResult<SupportDepartmentDocument>> {
-    const { data, page, limit } = filterDto;
-    return this.supportDepartmentModel.paginate(data, { page, limit });
-  }
-
-  async findByQuery(
-    query: FilterQuery<SupportDepartmentDocument>,
-  ): Promise<SupportDepartmentDocument[]> {
-    const results = await this.supportDepartmentModel.find(query);
-
-    return await Promise.all(results.map((r) => this.populateDepartment(r)));
+    return this.repository.findPaginate(filterDto);
   }
 
   async create(
     createSupportLevelDto: CreateSupportDepartmentDto,
   ): Promise<SupportDepartmentDocument> {
-    await this.validateName(createSupportLevelDto, null);
-    const newDepartment = await this.supportDepartmentModel.create(
-      createSupportLevelDto,
-    );
+    const newDepartment = await this.repository.create(createSupportLevelDto);
 
     return this.populateDepartment(newDepartment);
   }
 
   async update(
-    id: SupportDepartmentDocument['id'],
+    id: string,
     updateSupportLevelDto: UpdateSupportDepartmentDto,
   ): Promise<SupportDepartmentDocument> {
-    await this.validateName(updateSupportLevelDto, id);
-    const departmentUpdate =
-      await this.supportDepartmentModel.findByIdAndUpdate(
-        id,
-        updateSupportLevelDto,
-        { new: true },
-      );
+    const departmentUpdate = await this.repository.findByIdAndUpdate(
+      id,
+      updateSupportLevelDto,
+      { new: true },
+    );
 
     if (!departmentUpdate) {
-      throw new NotFoundException(NOT_EXIST_DEPARTMENT_SUPPORT);
+      throw new NotFoundException(SupportDepartmentsErrors.NOT_FOUND);
     }
 
     return this.populateDepartment(departmentUpdate);
   }
 
   async remove(id: string): Promise<SupportDepartmentDocument> {
-    const department = await this.supportDepartmentModel.findByIdAndUpdate(
-      id,
-      { status: Status.DELETED },
-      { new: true },
-    );
+    const department = await this.repository.findByIdAndDelete(id);
 
     if (!department) {
-      throw new NotFoundException(NOT_EXIST_DEPARTMENT_SUPPORT);
+      throw new NotFoundException(SupportDepartmentsErrors.NOT_FOUND);
     }
 
     return department;
@@ -111,11 +89,11 @@ export class SupportDepartmentsService {
 
   checkStatus(department: SupportDepartmentDocument): void {
     if (department.status === Status.DELETED) {
-      throw new NotFoundException(DELETE_SUPPORT_DEPARTMENT);
+      throw new NotFoundException(SupportDepartmentsErrors.DELETE);
     }
 
     if (department.status === Status.INACTIVE) {
-      throw new NotFoundException(INACTIVE_SUPPORT_DEPARTMENT);
+      throw new NotFoundException(SupportDepartmentsErrors.INACTIVE);
     }
   }
 
@@ -126,28 +104,6 @@ export class SupportDepartmentsService {
   private populateDepartment(
     department: SupportDepartmentDocument,
   ): Promise<SupportDepartmentDocument> {
-    const match = { status: Status.ACTIVE };
-
-    return department.populate([
-      { path: 'businessContractor', match, select: 'name' },
-      { path: 'supportLevels', match, select: 'name' },
-      { path: 'defaultLevel', match, select: 'name' },
-    ]);
-  }
-
-  private async validateName(
-    dto: UpdateSupportDepartmentDto,
-    id: string | null,
-  ): Promise<void> {
-    const { name, businessContractor } = dto;
-
-    const department = await this.findOneByQuery({
-      name,
-      _id: { $ne: id },
-      businessContractor,
-      status: Status.ACTIVE,
-    });
-
-    if (department) throw new BadRequestException(DEPARTMENT_NAME_EXIST);
+    return department.populate(this.pathsPopulate);
   }
 }

@@ -9,6 +9,8 @@ import { SupportDepartmentsController } from './support-departments.controller';
 
 import { SupportDepartmentsService } from './support-departments.service';
 
+import { SupportDepartmentsRepository } from './repositories/support-departments.repository';
+
 import {
   SupportDepartment,
   SupportDepartmentSchema,
@@ -26,7 +28,7 @@ import {
     SupportLevelsModule,
   ],
   controllers: [SupportDepartmentsController],
-  providers: [SupportDepartmentsService],
+  providers: [SupportDepartmentsService, SupportDepartmentsRepository],
   exports: [SupportDepartmentsService],
 })
 export class SupportDepartmentsModule {}

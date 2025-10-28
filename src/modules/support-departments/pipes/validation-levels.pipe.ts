@@ -6,7 +6,7 @@ import { SupportLevelsService } from '@modules/support-levels/support-levels.ser
 
 import { CreateSupportDepartmentDto } from '../dto';
 
-import { SUPPORT_LEVEL_ERROR_MESSAGE } from '../constants';
+import { SupportDepartmentsErrors } from '../errors/support-departments.errors';
 
 @Injectable()
 export class ValidationLevelsPipe implements PipeTransform {
@@ -44,7 +44,7 @@ export class ValidationLevelsPipe implements PipeTransform {
     });
 
     if (!supportLevel) {
-      throw new BadRequestException(SUPPORT_LEVEL_ERROR_MESSAGE);
+      throw new BadRequestException(SupportDepartmentsErrors.LEVEL_MISMATCH);
     }
   }
 }
