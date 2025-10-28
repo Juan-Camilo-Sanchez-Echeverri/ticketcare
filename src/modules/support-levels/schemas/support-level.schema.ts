@@ -30,3 +30,5 @@ export class SupportLevel extends BaseSchema {
 
 export type SupportLevelDocument = HydratedDocument<SupportLevel>;
 export const SupportLevelSchema = SchemaFactory.createForClass(SupportLevel);
+
+SupportLevelSchema.index({ name: 1, businessContractor: 1 }, { unique: true });

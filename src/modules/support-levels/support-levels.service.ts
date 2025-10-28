@@ -1,41 +1,38 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { InjectModel } from '@nestjs/mongoose';
-
-import { FilterQuery, type PaginateModel, PaginateResult } from 'mongoose';
+import { FilterQuery, PaginateResult, PopulateOptions } from 'mongoose';
 
 import { FilterDto } from '@common/dto';
 import { Status } from '@common/enums';
 
+import { ICrudService } from '@common/interfaces';
+
 import { CreateSupportLevelDto, UpdateSupportLevelDto } from './dto';
 
-import {
-  SupportLevel,
-  SupportLevelDocument,
-} from './schemas/support-level.schema';
+import { SupportLevelsRepository } from './repositories/support-levels.repository';
 
-import {
-  DELETE_SUPPORT_LEVEL,
-  INACTIVE_SUPPORT_LEVEL,
-  LEVEL_NAME_EXIST,
-  NOT_EXIST_SUPPORT_LEVEL,
-} from './constants';
+import { SupportLevelDocument } from './schemas/support-level.schema';
+
+import { SupportLevelsErrors } from './errors/support-levels.errors';
 
 @Injectable()
-export class SupportLevelsService {
-  constructor(
-    @InjectModel(SupportLevel.name)
-    private supportLevelModel: PaginateModel<SupportLevel>,
-  ) {}
+export class SupportLevelsService
+  implements ICrudService<SupportLevelDocument>
+{
+  private readonly match = { status: Status.ACTIVE };
+
+  private readonly pathsPopulate: PopulateOptions[] = [
+    { path: 'businessContractor', match: this.match, select: 'name' },
+  ];
+
+  constructor(private repository: SupportLevelsRepository) {}
 
   async findOneById(id: string): Promise<SupportLevelDocument> {
-    const supportLevel = await this.supportLevelModel.findById(id);
+    const supportLevel = await this.repository.findOneById(id);
 
-    if (!supportLevel) throw new NotFoundException(NOT_EXIST_SUPPORT_LEVEL);
+    if (!supportLevel) {
+      throw new NotFoundException(SupportLevelsErrors.NOT_FOUND);
+    }
 
     return await this.populateLevel(supportLevel);
   }
@@ -43,7 +40,7 @@ export class SupportLevelsService {
   async findOneByQuery(
     query: FilterQuery<SupportLevelDocument>,
   ): Promise<SupportLevelDocument | null> {
-    const level = await this.supportLevelModel.findOne(query);
+    const level = await this.repository.findOne(query);
 
     return level ? await this.populateLevel(level) : null;
   }
@@ -51,24 +48,15 @@ export class SupportLevelsService {
   async findPaginate(
     filterDto: FilterDto<SupportLevelDocument>,
   ): Promise<PaginateResult<SupportLevelDocument>> {
-    const { data, limit, page } = filterDto;
-
-    return await this.supportLevelModel.paginate(data, { page, limit });
-  }
-
-  async findByQuery(
-    query: FilterQuery<SupportLevelDocument>,
-  ): Promise<SupportLevelDocument[]> {
-    const levels = await this.supportLevelModel.find(query);
-    return await Promise.all(levels.map((level) => this.populateLevel(level)));
+    return await this.repository.findPaginate(filterDto, {
+      populate: this.pathsPopulate,
+    });
   }
 
   async create(
     createSupportLevelDto: CreateSupportLevelDto,
   ): Promise<SupportLevelDocument> {
-    await this.validateName(createSupportLevelDto, null);
-
-    const newLevel = await this.supportLevelModel.create(createSupportLevelDto);
+    const newLevel = await this.repository.create(createSupportLevelDto);
 
     return await this.populateLevel(newLevel);
   }
@@ -77,9 +65,7 @@ export class SupportLevelsService {
     id: string,
     updateSupportLevelDto: UpdateSupportLevelDto,
   ): Promise<SupportLevelDocument> {
-    await this.validateName(updateSupportLevelDto, id);
-
-    const levelUpdate = await this.supportLevelModel.findByIdAndUpdate(
+    const levelUpdate = await this.repository.findByIdAndUpdate(
       id,
       updateSupportLevelDto,
       {
@@ -87,63 +73,36 @@ export class SupportLevelsService {
       },
     );
 
-    if (!levelUpdate) throw new NotFoundException(NOT_EXIST_SUPPORT_LEVEL);
+    if (!levelUpdate) {
+      throw new NotFoundException(SupportLevelsErrors.NOT_FOUND);
+    }
 
     return await this.populateLevel(levelUpdate);
   }
 
   async remove(id: string): Promise<SupportLevelDocument> {
-    const levelDeleted = await this.supportLevelModel.findByIdAndUpdate(
-      id,
-      { status: Status.DELETED },
-      {
-        new: true,
-      },
-    );
+    const levelDeleted = await this.repository.findByIdAndDelete(id);
 
-    if (!levelDeleted) throw new NotFoundException(NOT_EXIST_SUPPORT_LEVEL);
+    if (!levelDeleted) {
+      throw new NotFoundException(SupportLevelsErrors.NOT_FOUND);
+    }
 
-    return await this.populateLevel(levelDeleted);
+    return levelDeleted;
   }
 
   checkStatus(level: SupportLevelDocument): void {
     if (level.status === Status.DELETED) {
-      throw new NotFoundException(DELETE_SUPPORT_LEVEL);
+      throw new NotFoundException(SupportLevelsErrors.DELETE);
     }
 
     if (level.status === Status.INACTIVE) {
-      throw new NotFoundException(INACTIVE_SUPPORT_LEVEL);
+      throw new NotFoundException(SupportLevelsErrors.INACTIVE);
     }
   }
 
   private async populateLevel(
     level: SupportLevelDocument,
   ): Promise<SupportLevelDocument> {
-    const match = { status: Status.ACTIVE };
-
-    return await level.populate([
-      { path: 'businessContractor', select: 'name', match },
-      { path: 'modifiedBy', select: 'name lastName role', match },
-    ]);
-  }
-
-  /**
-   * * Private methods
-   */
-
-  private async validateName(
-    dto: UpdateSupportLevelDto,
-    levelId: string | null,
-  ): Promise<void> {
-    const { name, businessContractor } = dto;
-
-    const level = await this.findOneByQuery({
-      name,
-      _id: { $ne: levelId },
-      businessContractor,
-      status: Status.ACTIVE,
-    });
-
-    if (level) throw new BadRequestException(LEVEL_NAME_EXIST);
+    return await level.populate(this.pathsPopulate);
   }
 }

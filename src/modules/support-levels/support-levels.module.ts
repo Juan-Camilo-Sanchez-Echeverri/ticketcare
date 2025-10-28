@@ -8,6 +8,8 @@ import { SupportLevelsController } from './support-levels.controller';
 
 import { SupportLevelsService } from './support-levels.service';
 
+import { SupportLevelsRepository } from './repositories/support-levels.repository';
+
 import {
   SupportLevel,
   SupportLevelSchema,
@@ -24,7 +26,7 @@ import {
     BusinessContractorsModule,
   ],
   controllers: [SupportLevelsController],
-  providers: [SupportLevelsService],
+  providers: [SupportLevelsService, SupportLevelsRepository],
   exports: [SupportLevelsService],
 })
 export class SupportLevelsModule {}
