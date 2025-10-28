@@ -1,14 +1,16 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { BusinessContractorsController } from './business-contractors.controller';
+
+import { BusinessContractorsService } from './business-contractors.service';
+
+import { BusinessContractorsRepository } from './repositories/business-contractors.repository';
+
 import {
   BusinessContractor,
   BusinessContractorSchema,
 } from './schemas/business-contractor.schema';
-
-import { BusinessContractorsController } from './business-contractors.controller';
-
-import { BusinessContractorsService } from './business-contractors.service';
 
 @Module({
   imports: [
@@ -20,7 +22,7 @@ import { BusinessContractorsService } from './business-contractors.service';
     ]),
   ],
   controllers: [BusinessContractorsController],
-  providers: [BusinessContractorsService],
+  providers: [BusinessContractorsService, BusinessContractorsRepository],
   exports: [BusinessContractorsService],
 })
 export class BusinessContractorsModule {}
