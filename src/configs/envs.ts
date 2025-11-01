@@ -33,6 +33,9 @@ interface EnvVars {
   DEFAULT_USER_EMAIL: string;
   DEFAULT_USER_PHONE: string;
   DEFAULT_USER_PASSWORD: string;
+
+  IMAP_USER: string;
+  IMAP_PASSWORD: string;
 }
 
 const envSchema = joi
@@ -59,6 +62,9 @@ const envSchema = joi
     DEFAULT_USER_EMAIL: joi.string().required(),
     DEFAULT_USER_PHONE: joi.string().required(),
     DEFAULT_USER_PASSWORD: joi.string().required(),
+
+    IMAP_USER: joi.string().required(),
+    IMAP_PASSWORD: joi.string().required(),
   })
   .unknown(true);
 
@@ -89,4 +95,7 @@ export const envs = {
   defaultUserEmail: envVars.DEFAULT_USER_EMAIL,
   defaultUserPhone: envVars.DEFAULT_USER_PHONE,
   defaultUserPassword: envVars.DEFAULT_USER_PASSWORD,
+
+  imapUser: envVars.IMAP_USER,
+  imapPassword: envVars.IMAP_PASSWORD,
 };

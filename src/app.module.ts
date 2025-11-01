@@ -29,6 +29,7 @@ import { SupportDepartmentsModule } from '@modules/support-departments/support-d
 import { SupportLevelsModule } from '@modules/support-levels/support-levels.module';
 import { TicketsModule } from '@modules/tickets/tickets.module';
 import { UsersModule } from '@modules/users/users.module';
+import { EmailModule } from '@modules/email/email.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { UsersModule } from '@modules/users/users.module';
     SupportDepartmentsModule,
     SupportLevelsModule,
     TicketsModule,
+    EmailModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
