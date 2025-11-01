@@ -12,8 +12,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 
-import { FilesInterceptor } from '@nestjs/platform-express';
-
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 
 import { UploadInterceptor } from '@common/interceptors/upload.interceptor';
@@ -117,7 +115,7 @@ export class TicketsFilesController {
   @UseGuards(OwnTicketGuard)
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(TicketActivityEventInterceptor)
-  @UseInterceptors(FilesInterceptor('files'))
+  @UploadInterceptor({ type: 'multiple', fieldName: 'files' })
   async addActivity(
     @Param('ticketId') ticketId: string,
     @Body(ActivityTicketPipe) activityDto: ActivityDto,
@@ -155,7 +153,7 @@ export class TicketsFilesController {
   @Patch(':ticketId/activity/:activityId')
   @ApiConsumes('multipart/form-data')
   @UseGuards(OwnTicketGuard, OwnActivityTicketGuard)
-  @UseInterceptors(FilesInterceptor('files'))
+  @UploadInterceptor({ type: 'multiple', fieldName: 'files' })
   async updateActivity(
     @Param('ticketId') ticketId: string,
     @Param('activityId') activityId: string,
