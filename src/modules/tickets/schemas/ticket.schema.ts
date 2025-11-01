@@ -12,6 +12,11 @@ import { PriorityTicket, StatusTicket } from '../enums';
 import { Activity, ActivitySchema } from './activity.schema';
 import { Evidence, EvidenceSchema } from './evidence.schema';
 
+type UserReference = Pick<
+  UserDocument,
+  '_id' | 'name' | 'lastName' | 'email' | 'phone'
+>;
+
 @Schema({ timestamps: true })
 export class Ticket {
   @Prop()
@@ -24,16 +29,10 @@ export class Ticket {
   description: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  assignedUser: Pick<
-    UserDocument,
-    '_id' | 'name' | 'lastName' | 'email' | 'phone'
-  >;
+  assignedUser: UserReference;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  requestingUser: Pick<
-    UserDocument,
-    '_id' | 'name' | 'lastName' | 'email' | 'phone'
-  >;
+  requestingUser: UserReference;
 
   @Prop({ enum: StatusTicket, default: StatusTicket.OPEN })
   status: StatusTicket;

@@ -1,29 +1,40 @@
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsOptional } from 'class-validator';
 
-import { UpdateTicketDto } from './update-ticket.dto';
+import type { FilterQuery } from 'mongoose';
+
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+
 import { MediaEvidenceDto } from './media-evidence.dto';
+import { TicketDocument } from '../schemas';
 
-export class EvidenceDto extends UpdateTicketDto {
+export class EvidenceDto {
+  /**
+   * URL of the evidence
+   */
   @IsOptional()
-  @IsString()
-  @IsNotEmpty()
   url?: string;
 
+  /**
+   * User for accessing the evidence
+   */
   @IsOptional()
-  @IsString()
-  @IsNotEmpty()
   user?: string;
 
+  /**
+   * Password for accessing the evidence
+   */
   @IsOptional()
-  @IsString()
-  @IsNotEmpty()
   password?: string;
 
-  @IsArray()
-  @IsOptional()
-  files?: Express.Multer.File[];
+  @ApiHideProperty()
+  query?: FilterQuery<TicketDocument>;
 
+  @ApiProperty({ type: 'array', items: { type: 'string', format: 'binary' } })
+  files?: string[];
+
+  @ApiHideProperty()
   contractorId?: string;
 
+  @ApiHideProperty()
   multimedia?: MediaEvidenceDto[];
 }

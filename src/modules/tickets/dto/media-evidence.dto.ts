@@ -4,7 +4,7 @@ export class MediaEvidenceDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  nombreFile?: string;
+  nameFile?: string;
 
   @IsOptional()
   @IsString()

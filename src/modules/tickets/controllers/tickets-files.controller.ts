@@ -8,36 +8,70 @@ import {
   UploadedFiles,
   Post,
   Delete,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
+
 import { FilesInterceptor } from '@nestjs/platform-express';
+
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+
+import { UploadInterceptor } from '@common/interceptors/upload.interceptor';
 
 import { FilesValidationPipe } from '@common/pipes';
 
-import { AllRoles } from '@common/decorators';
+import {
+  AllRoles,
+  ApiAuthResponses,
+  ApiNoContentResponseWrapper,
+} from '@common/decorators';
+
+import { StorageService } from '@modules/storage/storage.service';
 
 import { OwnActivityTicketGuard, OwnTicketGuard } from '../guards';
+
 import { ActivityDto, EvidenceDto } from '../dto';
+
 import { ActivityTicketPipe, EvidenceTicketPipe } from '../pipes';
+
 import { TicketsService } from '../tickets.service';
+
 import { TicketDocument } from '../schemas';
+
 import {
   TicketResponseInterceptor,
   TicketActivityEventInterceptor,
 } from '../interceptors';
 
+@ApiBearerAuth()
+@ApiAuthResponses()
+@ApiTags('tickets')
 @Controller('tickets')
 @UseInterceptors(TicketResponseInterceptor)
 export class TicketsFilesController {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly storageService: StorageService,
+  ) {}
 
+  /**
+   * Add evidence to a ticket
+   *
+   * @remarks
+   * This endpoint allows users to add evidence files to a specific ticket.
+   * It supports uploading multiple files and associates them with the ticket's evidence.
+   *
+   * Allows all roles to access this endpoint, with ownership verification via the OwnTicketGuard.
+   */
   @Patch(':ticketId/evidence')
   @AllRoles()
   @UseGuards(OwnTicketGuard)
-  @UseInterceptors(FilesInterceptor('files'))
+  @ApiBody({ type: EvidenceDto })
+  @ApiConsumes('multipart/form-data')
+  @UploadInterceptor({ type: 'multiple', fieldName: 'files' })
   async addEvidence(
+    @Body(EvidenceTicketPipe) evidenceDto: EvidenceDto,
     @Param('ticketId') ticketId: string,
-    @Body(EvidenceTicketPipe)
-    evidenceDto: EvidenceDto,
     @UploadedFiles(FilesValidationPipe)
     files?: Array<Express.Multer.File>,
   ): Promise<TicketDocument> {
@@ -45,17 +79,15 @@ export class TicketsFilesController {
 
     await Promise.all(
       (files ?? []).map(async (file) => {
-        console.log(file);
-        // const { path } = generateFileNameAndPath(
-        //   file,
-        //   evidenceDto.contractorId,
-        //   `tickets/${ticketId}/evidence`,
-        // );
-        // const fileUrl = await this.s3Service.uploadFile(file, path);
-        // multimedia.push({
-        //   nombreFile: file.originalname,
-        //   url: fileUrl,
-        // });
+        const folder = `${evidenceDto.contractorId}/tickets/${ticketId}/evidence`;
+
+        const fileUrl = await this.storageService.saveFile(
+          file,
+          folder,
+          'local',
+        );
+
+        multimedia.push({ nameFile: file.originalname, url: fileUrl });
       }),
     );
 
@@ -71,11 +103,21 @@ export class TicketsFilesController {
     return await this.ticketsService.update(ticketId, updatedEvidenceDto);
   }
 
+  /**
+   * Add activity to a ticket
+   *
+   * @remarks
+   * This endpoint allows users to add activity entries to a specific ticket.
+   * It supports uploading multiple files associated with the activity.
+   *
+   * Allows all roles to access this endpoint, with ownership verification via the OwnTicketGuard.
+   */
   @Post(':ticketId/activity')
   @AllRoles()
   @UseGuards(OwnTicketGuard)
-  @UseInterceptors(FilesInterceptor('files'))
+  @ApiConsumes('multipart/form-data')
   @UseInterceptors(TicketActivityEventInterceptor)
+  @UseInterceptors(FilesInterceptor('files'))
   async addActivity(
     @Param('ticketId') ticketId: string,
     @Body(ActivityTicketPipe) activityDto: ActivityDto,
@@ -85,33 +127,33 @@ export class TicketsFilesController {
     if (files && files.length > 0) {
       activityDto.content.urls = [];
 
-      // for (const file of files) {
-      //   const { path } = generateFileNameAndPath(
-      //     file,
-      //     activityDto.contractorId,
-      //     `tickets/${ticketId}/activity`,
-      //   );
+      for (const file of files) {
+        const folder = `${activityDto.contractorId}/tickets/${ticketId}/activity`;
 
-      //   const fileUrl = await this.s3Service.uploadFile(file, path);
+        const fileUrl = await this.storageService.saveFile(
+          file,
+          folder,
+          'local',
+        );
 
-      //   activityDto.content.urls.push(fileUrl);
-      // }
+        activityDto.content.urls.push(fileUrl);
+      }
     }
 
-    activityDto = {
-      ...activityDto,
-      query: {
-        status: activityDto.status,
-        $push: {
-          activity: { content: activityDto.content, user: activityDto.user },
-        },
-      },
-    };
-
-    return await this.ticketsService.update(ticketId, activityDto);
+    return await this.ticketsService.addActivity(ticketId, activityDto);
   }
 
+  /**
+   * Update activity in a ticket
+   *
+   * @remarks
+   * This endpoint allows users to update an existing activity entry in a specific ticket.
+   * It supports uploading additional files associated with the activity.
+   *
+   * Allows all roles to access this endpoint, with ownership verification via the OwnTicketGuard and OwnActivityTicketGuard.
+   */
   @Patch(':ticketId/activity/:activityId')
+  @ApiConsumes('multipart/form-data')
   @UseGuards(OwnTicketGuard, OwnActivityTicketGuard)
   @UseInterceptors(FilesInterceptor('files'))
   async updateActivity(
@@ -123,17 +165,17 @@ export class TicketsFilesController {
     if (files && files.length > 0) {
       activityDto.content.urls = activityDto.content.urls || [];
 
-      // for (const file of files) {
-      //   const { path } = generateFileNameAndPath(
-      //     file,
-      //     activityDto.contractorId,
-      //     `tickets/${ticketId}/activity`,
-      //   );
+      for (const file of files) {
+        const folder = `${activityDto.contractorId}/tickets/${ticketId}/activity`;
 
-      //   const fileUrl = await this.s3Service.uploadFile(file, path);
+        const fileUrl = await this.storageService.saveFile(
+          file,
+          folder,
+          'local',
+        );
 
-      //   activityDto.content.urls.push(fileUrl);
-      // }
+        activityDto.content.urls.push(fileUrl);
+      }
     }
 
     const updateQuery = {
@@ -148,8 +190,18 @@ export class TicketsFilesController {
     );
   }
 
+  /**
+   * Delete a file from an activity in a ticket
+   *
+   * @remarks
+   * This endpoint allows users to delete a specific file associated with an activity in a ticket.
+   *
+   * Allows all roles to access this endpoint, with ownership verification via the OwnTicketGuard and OwnActivityTicketGuard.
+   */
   @Delete(':ticketId/activity/:activityId/delete-file')
   @AllRoles()
+  @ApiNoContentResponseWrapper()
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(OwnTicketGuard, OwnActivityTicketGuard)
   async deleteFileFromActivity(
     @Param('ticketId') ticketId: string,
@@ -164,13 +216,23 @@ export class TicketsFilesController {
       updateQuery,
     );
 
-    // await this.s3Service.deleteFile(fileUrl);
+    await this.storageService.deleteFile(fileUrl, 'local');
 
     return updatedTicket;
   }
 
+  /**
+   * Delete an activity from a ticket
+   *
+   * @remarks
+   * This endpoint allows users to delete an entire activity entry from a specific ticket.
+   *
+   * Allows all roles to access this endpoint, with ownership verification via the OwnTicketGuard and OwnActivityTicketGuard.
+   */
   @Delete(':ticketId/activity/:activityId')
   @AllRoles()
+  @ApiNoContentResponseWrapper()
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(OwnTicketGuard, OwnActivityTicketGuard)
   async deleteEvidence(
     @Param('ticketId') ticketId: string,
@@ -184,7 +246,9 @@ export class TicketsFilesController {
     if (activity['_id'].toString() === activityId) {
       const urls = activity?.content?.urls;
       if (Array.isArray(urls)) {
-        // await Promise.all(urls.map((url) => this.s3Service.deleteFile(url)));
+        await Promise.all(
+          urls.map((url) => this.storageService.deleteFile(url, 'local')),
+        );
       }
     }
 

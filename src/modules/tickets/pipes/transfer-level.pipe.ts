@@ -18,11 +18,7 @@ import { UserDocument } from '@modules/users/schemas';
 
 import { UpdateTicketDto } from '../dto';
 
-import {
-  LEVEL_NOT_BELONG,
-  NO_PERMISSION_TRANSFER_LEVEL_TICKET,
-  TICKET_ALREADY_IN_LEVEL,
-} from '../constants';
+import { TicketErrors } from '../errors/tickets.errors';
 
 import { StatusTicket } from '../enums';
 
@@ -48,7 +44,7 @@ export class TransferLevelPipe implements PipeTransform {
     const levelInfo = await this.levelsService.findOneById(supportLevel!);
 
     if (String(ticket.supportLevel._id) === supportLevel) {
-      throw new BadRequestException(TICKET_ALREADY_IN_LEVEL);
+      throw new BadRequestException(TicketErrors.TICKET_ALREADY_IN_LEVEL);
     }
 
     const user = extractUserFromRequest(this.request);
@@ -115,7 +111,7 @@ export class TransferLevelPipe implements PipeTransform {
     levelInfo: SupportLevelDocument,
   ) {
     if (ticket.businessContractor._id !== levelInfo.businessContractor._id) {
-      throw new BadRequestException(NO_PERMISSION_TRANSFER_LEVEL_TICKET);
+      throw new BadRequestException(TicketErrors.NO_PERMISSION_TRANSFER_LEVEL);
     }
 
     const departmentTicket = ticket.supportDepartment;
@@ -125,7 +121,7 @@ export class TransferLevelPipe implements PipeTransform {
     );
 
     if (!isDepartment) {
-      throw new BadRequestException(LEVEL_NOT_BELONG);
+      throw new BadRequestException(TicketErrors.LEVEL_NOT_BELONG);
     }
   }
 }

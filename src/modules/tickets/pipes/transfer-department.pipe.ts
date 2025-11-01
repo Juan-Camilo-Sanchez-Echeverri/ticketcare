@@ -17,10 +17,7 @@ import { SupportDepartmentDocument } from '@modules/support-departments/schemas/
 import { SupportDepartmentsService } from '@modules/support-departments/support-departments.service';
 import { UserDocument } from '@modules/users/schemas';
 
-import {
-  NO_PERMISSION_TRANSFER_DEPARTMENT_TICKET,
-  TICKET_ALREADY_IN_DEPARTMENT,
-} from '../constants';
+import { TicketErrors } from '../errors/tickets.errors';
 
 import { UpdateTicketDto } from '../dto';
 
@@ -51,7 +48,7 @@ export class TransferDepartmentPipe implements PipeTransform {
     );
 
     if (String(ticket.supportDepartment._id) === supportDepartment) {
-      throw new BadRequestException(TICKET_ALREADY_IN_DEPARTMENT);
+      throw new BadRequestException(TicketErrors.TICKET_ALREADY_IN_DEPARTMENT);
     }
 
     const user = extractUserFromRequest(this.request);
@@ -139,7 +136,9 @@ export class TransferDepartmentPipe implements PipeTransform {
     if (
       ticket.businessContractor._id !== departmentInfo.businessContractor._id
     ) {
-      throw new ForbiddenException(NO_PERMISSION_TRANSFER_DEPARTMENT_TICKET);
+      throw new ForbiddenException(
+        TicketErrors.NO_PERMISSION_TRANSFER_DEPARTMENT,
+      );
     }
   }
 }

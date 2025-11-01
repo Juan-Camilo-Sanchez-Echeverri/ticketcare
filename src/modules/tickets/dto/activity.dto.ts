@@ -1,14 +1,19 @@
-import { TypeContent } from '../enums';
-import { UpdateTicketDto } from './update-ticket.dto';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+
 import {
-  IsArray,
+  Allow,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   ValidateNested,
 } from 'class-validator';
+
 import { Type } from 'class-transformer';
 
+import { TypeContent, StatusTicket } from '../enums';
+
 class ContentDto {
+  @ApiHideProperty()
   type?: TypeContent;
 
   @IsNotEmpty()
@@ -18,16 +23,22 @@ class ContentDto {
   urls?: string[];
 }
 
-export class ActivityDto extends UpdateTicketDto {
+export class ActivityDto {
   @Type(() => ContentDto)
   @ValidateNested({ each: true })
   content: ContentDto;
 
+  @ApiHideProperty()
   user: string;
 
-  @IsOptional()
-  @IsArray()
+  @ApiHideProperty()
+  @IsEnum(StatusTicket)
+  status: StatusTicket;
+
+  @Allow()
+  @ApiProperty({ type: 'array', items: { type: 'file', format: 'binary' } })
   files?: Express.Multer.File[];
 
+  @ApiHideProperty()
   contractorId: string;
 }

@@ -14,6 +14,7 @@ import {
 } from './controllers';
 import { TicketsService } from './tickets.service';
 import { UsersModule } from '../users/users.module';
+import { TicketsRepository } from './repositories/tickets.repository';
 
 @Module({
   imports: [
@@ -34,6 +35,6 @@ import { UsersModule } from '../users/users.module';
     TicketsFilesController,
     TicketsListController,
   ],
-  providers: [TicketsService],
+  providers: [TicketsService, TicketsRepository],
 })
 export class TicketsModule {}

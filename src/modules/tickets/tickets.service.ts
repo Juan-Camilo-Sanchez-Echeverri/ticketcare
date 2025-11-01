@@ -1,24 +1,35 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { InjectModel } from '@nestjs/mongoose';
-
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { type PaginateModel, PopulateOptions, UpdateQuery } from 'mongoose';
+import { PopulateOptions, UpdateQuery } from 'mongoose';
 
 import { Status, TicketEvents } from '@common/enums';
 
-import { CreateTicketDto, PaginationTicketDto, UpdateTicketDto } from './dto';
+import {
+  ActivityDto,
+  AssignedTicketDto,
+  CreateTicketDto,
+  PaginationTicketDto,
+  UpdateTicketDto,
+} from './dto';
 
-import { getTicketSerial, validateHourDifference } from './helpers';
+import {
+  getTicketSerial,
+  messageAssignTicket,
+  messageTransferAgent,
+  validateHourDifference,
+} from './helpers';
 
-import { Activity, Ticket, TicketDocument } from './schemas';
+import { TicketsRepository } from './repositories/tickets.repository';
 
-import { ACTIVITY_NOT_EXIST, NOT_EXIST_TICKET } from './constants';
+import { Activity, TicketDocument } from './schemas';
 
-import { StatusTicket } from './enums';
+import { TicketErrors } from './errors/tickets.errors';
+
+import { StatusTicket, TypeContent } from './enums';
 
 @Injectable()
 export class TicketsService {
@@ -46,25 +57,20 @@ export class TicketsService {
   ];
 
   constructor(
-    @InjectModel(Ticket.name)
-    private ticketModel: PaginateModel<TicketDocument>,
+    private readonly repository: TicketsRepository,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async findPaginate(query: PaginationTicketDto) {
-    const { data, limit, page } = query;
-
-    return await this.ticketModel.paginate(data, {
-      page,
-      limit,
+    return await this.repository.findPaginate(query, {
       populate: this.pathsPopulate,
     });
   }
 
-  async findOneById(id: TicketDocument['id']): Promise<TicketDocument> {
-    const ticket = await this.ticketModel.findById(id);
+  async findOneById(id: string): Promise<TicketDocument> {
+    const ticket = await this.repository.findOneById(id);
 
-    if (!ticket) throw new NotFoundException(NOT_EXIST_TICKET);
+    if (!ticket) throw new NotFoundException(TicketErrors.NOT_FOUND.message);
 
     return this.populateTicket(ticket);
   }
@@ -72,9 +78,12 @@ export class TicketsService {
   async create(createTicketDto: CreateTicketDto): Promise<TicketDocument> {
     const { businessContractor } = createTicketDto;
 
-    const serial = await getTicketSerial(this.ticketModel, businessContractor);
+    const serial = await getTicketSerial(
+      this.repository.ticketModel,
+      businessContractor,
+    );
 
-    const newTicket = await this.ticketModel.create({
+    const newTicket = await this.repository.create({
       ...createTicketDto,
       serial,
     });
@@ -83,30 +92,97 @@ export class TicketsService {
   }
 
   async update(
-    id: TicketDocument['id'],
+    id: string,
     updateTicketDto: UpdateTicketDto,
   ): Promise<TicketDocument> {
-    const ticketUpdate = await this.ticketModel.findByIdAndUpdate(
+    const ticketUpdate = await this.repository.findByIdAndUpdate(
       id,
-      updateTicketDto.query,
-      { new: true },
+      updateTicketDto,
     );
 
-    if (!ticketUpdate) throw new NotFoundException(NOT_EXIST_TICKET);
+    if (!ticketUpdate) throw new NotFoundException(TicketErrors.NOT_FOUND);
 
     return await this.populateTicket(ticketUpdate);
+  }
+
+  async addActivity(
+    ticketId: string,
+    activityDto: ActivityDto,
+  ): Promise<TicketDocument> {
+    const updateQuery = {
+      $push: {
+        activity: {
+          content: activityDto.content,
+          user: activityDto.user,
+        },
+      },
+      $set: { status: activityDto.status },
+    };
+
+    const ticketUpdate = await this.repository.findByIdAndUpdate(
+      ticketId,
+      updateQuery,
+    );
+
+    if (!ticketUpdate) throw new NotFoundException(TicketErrors.NOT_FOUND);
+
+    return this.populateTicket(ticketUpdate);
+  }
+
+  async assignTicket(
+    ticketId: string,
+    assignedTicketDto: AssignedTicketDto,
+  ): Promise<TicketDocument> {
+    const { assignedUser, requestingUser, assignedUserInfo } =
+      assignedTicketDto;
+
+    const ticket = await this.findOneById(ticketId);
+
+    const isReassigned = !!ticket.assignedUser?._id;
+
+    const status = isReassigned
+      ? StatusTicket.CHANGE_AGENT
+      : StatusTicket.ASSIGNED;
+
+    const type = isReassigned ? TypeContent.TRANSFER_AGENT : TypeContent.ASSIGN;
+
+    const message = isReassigned
+      ? messageTransferAgent(requestingUser, assignedUserInfo, ticket)
+      : messageAssignTicket(requestingUser, ticket);
+
+    const updateQuery = {
+      $set: {
+        assignedUser,
+        status,
+      },
+      $push: {
+        activity: {
+          content: { type, message },
+          user: requestingUser._id,
+        },
+      },
+    };
+
+    const ticketUpdate = await this.repository.findByIdAndUpdate(
+      ticketId,
+      updateQuery,
+    );
+
+    if (!ticketUpdate) throw new NotFoundException(TicketErrors.NOT_FOUND);
+
+    return this.populateTicket(ticketUpdate);
   }
 
   async getActivityById(
     ticketId: TicketDocument['id'],
     activityId: string,
-  ): Promise<TicketDocument['activity'][0]> {
-    const ticket = await this.ticketModel.findOne(
+  ): Promise<TicketDocument['activity'][number]> {
+    const ticket = await this.repository.findOne(
       { _id: ticketId, 'activity._id': activityId },
       { 'activity.$': 1 },
     );
 
-    if (!ticket) throw new NotFoundException(ACTIVITY_NOT_EXIST);
+    if (!ticket) throw new NotFoundException(TicketErrors.ACTIVITY_NOT_FOUND);
 
     return ticket.activity[0];
   }
@@ -116,13 +192,13 @@ export class TicketsService {
     activityId: string,
     updateQuery: UpdateQuery<unknown>,
   ): Promise<TicketDocument> {
-    const updatedTicket = await this.ticketModel.findOneAndUpdate(
+    const updatedTicket = await this.repository.findOneAndUpdate(
       { _id: ticketId, 'activity._id': activityId },
       updateQuery,
       { new: true },
     );
 
-    if (!updatedTicket) throw new NotFoundException(NOT_EXIST_TICKET);
+    if (!updatedTicket) throw new NotFoundException(TicketErrors.NOT_FOUND);
 
     return this.populateTicket(updatedTicket);
   }
@@ -130,7 +206,7 @@ export class TicketsService {
   async deleteActivity(ticketId: TicketDocument['id'], activityId: string) {
     const activity = await this.getActivityById(ticketId, activityId);
 
-    await this.ticketModel.findOneAndUpdate(
+    await this.repository.findOneAndUpdate(
       { _id: ticketId },
       {
         $pull: { activity: { _id: activityId } },
@@ -163,15 +239,15 @@ export class TicketsService {
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
-    const tickets = await this.ticketModel.find({
-      status: StatusTicket.RESOLVED,
-    });
-
-    const populatedTickets = await Promise.all(
-      tickets.map((ticket) => this.populateTicket(ticket)),
+    const tickets = await this.repository.find(
+      {
+        status: StatusTicket.RESOLVED,
+      },
+      {},
+      { populate: this.pathsPopulate },
     );
 
-    for (const ticket of populatedTickets) {
+    for (const ticket of tickets) {
       const lastActivity = ticket.activity[ticket.activity.length - 1];
 
       const dateLastActivity = new Date(lastActivity['updatedAt']);

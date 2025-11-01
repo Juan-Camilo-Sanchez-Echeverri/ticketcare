@@ -15,12 +15,12 @@ import { UserDocument } from '@modules/users/schemas';
 import { UsersService } from '@modules/users/users.service';
 
 import { AssignedTicketDto } from '../dto';
-import { StatusTicket, TypeContent } from '../enums';
+
 import { TicketsService } from '../tickets.service';
 
-import { messageAssignTicket, messageTransferAgent } from '../helpers';
 import { TicketDocument } from '../schemas';
-import { DEPARTMENT_MISMATCH, LEVEL_MISMATCH } from '../constants';
+
+import { TicketErrors } from '../errors/tickets.errors';
 
 @Injectable()
 export class AssignedTicketPipe implements PipeTransform {
@@ -30,56 +30,21 @@ export class AssignedTicketPipe implements PipeTransform {
     private readonly usersService: UsersService,
   ) {}
 
-  async transform(value: AssignedTicketDto) {
+  async transform(value: AssignedTicketDto): Promise<AssignedTicketDto> {
     const { assignedUser } = value;
     const ticketId = this.request.params.ticketId;
 
     const requestingUser = extractUserFromRequest(this.request);
-    const assignedUserInfo = await this.usersService.findOneById(assignedUser!);
+    const assignedUserInfo = await this.usersService.findOneById(assignedUser);
 
     const ticket = await this.ticketsService.findOneById(ticketId);
 
     this.validateUsers(requestingUser, assignedUserInfo, ticket);
 
-    const { status, type, message } = this.getTicketUpdateData(
-      requestingUser,
-      assignedUserInfo,
-      ticket,
-    );
-
-    value.query = {
-      $set: { ...value, status },
-      $push: {
-        activity: {
-          content: { type, message },
-          user: requestingUser._id,
-        },
-      },
-    };
-
-    delete value.assignedUser;
+    value.requestingUser = requestingUser;
+    value.assignedUserInfo = assignedUserInfo;
 
     return value;
-  }
-
-  private getTicketUpdateData(
-    requestingUser: UserDocument,
-    assignedUser: UserDocument,
-    ticket: TicketDocument,
-  ) {
-    const isReassigned = !!ticket.assignedUser?._id;
-
-    const status = isReassigned
-      ? StatusTicket.CHANGE_AGENT
-      : StatusTicket.ASSIGNED;
-
-    const type = isReassigned ? TypeContent.TRANSFER_AGENT : TypeContent.ASSIGN;
-
-    const message = isReassigned
-      ? messageTransferAgent(requestingUser, assignedUser, ticket)
-      : messageAssignTicket(requestingUser, ticket);
-
-    return { status, type, message };
   }
 
   private validateUsers(
@@ -124,7 +89,12 @@ export class AssignedTicketPipe implements PipeTransform {
 
     const isLevelValid = levels.some(({ _id }) => String(_id) === levelTicket);
 
-    if (!departmentValid) throw new ForbiddenException(DEPARTMENT_MISMATCH);
-    if (!isLevelValid) throw new ForbiddenException(LEVEL_MISMATCH);
+    if (!departmentValid) {
+      throw new ForbiddenException(TicketErrors.DEPARTMENT_MISMATCH);
+    }
+
+    if (!isLevelValid) {
+      throw new ForbiddenException(TicketErrors.LEVEL_MISMATCH);
+    }
   }
 }

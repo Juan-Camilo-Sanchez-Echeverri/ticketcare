@@ -1,12 +1,17 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { FilterQuery } from 'mongoose';
+import { PartialType, ApiHideProperty } from '@nestjs/swagger';
+
+import type { FilterQuery } from 'mongoose';
+
+import { IsEnum, IsOptional } from 'class-validator';
 
 import { CreateTicketDto } from './create-ticket.dto';
+
 import { TicketDocument } from '../schemas';
-import { IsEnum, IsOptional, IsPositive, Max, Min } from 'class-validator';
+
 import { PriorityTicket, StatusTicket } from '../enums';
 
 export class UpdateTicketDto extends PartialType(CreateTicketDto) {
+  @ApiHideProperty()
   query?: FilterQuery<TicketDocument>;
 
   @IsOptional()
@@ -19,10 +24,4 @@ export class UpdateTicketDto extends PartialType(CreateTicketDto) {
   @IsOptional()
   @IsEnum(StatusTicket)
   status?: StatusTicket;
-
-  @IsOptional()
-  @IsPositive()
-  @Min(1)
-  @Max(5)
-  qualification?: number;
 }

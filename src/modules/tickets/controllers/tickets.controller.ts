@@ -9,11 +9,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 
-import { AllRoles, Roles } from '@common/decorators';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-import {} from '@common/enums';
+import { AllRoles, ApiAuthResponses, Roles } from '@common/decorators';
 
 import { OwnTicketGuard } from '../guards';
+
 import {
   TransferDepartmentPipe,
   ValidationTicketPipe,
@@ -23,19 +24,33 @@ import {
 
 import { AssignedTicketDto, CreateTicketDto, UpdateTicketDto } from '../dto';
 
-import { TicketsService } from '../tickets.service';
 import { TicketDocument } from '../schemas';
+
+import { TicketsService } from '../tickets.service';
+
 import {
   TicketCreationEventInterceptor,
   TicketResponseInterceptor,
   TicketStatusEventInterceptor,
 } from '../interceptors';
 
+@ApiBearerAuth()
+@ApiAuthResponses()
+@ApiTags('tickets')
 @Controller('tickets')
 @UseInterceptors(TicketResponseInterceptor)
 export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 
+  /**
+   * Get a ticket by its id.
+   *
+   * @remarks
+   *
+   * Retrieves a ticket using its unique identifier.
+   *
+   * Allows <b>all roles</b> to access this endpoint.
+   */
   @Get(':ticketId')
   @AllRoles()
   @UseGuards(OwnTicketGuard)
@@ -45,7 +60,16 @@ export class TicketsController {
     return await this.ticketsService.findOneById(ticketId);
   }
 
-  @Post(':contractorId')
+  /**
+   * Create a new ticket.
+   *
+   * @remarks
+   *
+   * Creates a new ticket with the provided details.
+   *
+   * Allows <b>all roles</b> to access this endpoint.
+   */
+  @Post()
   @AllRoles()
   @UseInterceptors(TicketCreationEventInterceptor)
   async create(
@@ -54,6 +78,15 @@ export class TicketsController {
     return await this.ticketsService.create(createTicketDto);
   }
 
+  /**
+   * Update a ticket by its id.
+   *
+   * @remarks
+   * Updates the details of an existing ticket using its unique identifier.
+   *
+   * Allows only users with roles <b>Admin</b>, <b>Coordinator</b>, and <b>Agent</b> to access this endpoint.
+   *
+   */
   @Patch(':ticketId')
   @Roles('Admin', 'Coordinator', 'Agent')
   @UseGuards(OwnTicketGuard)
@@ -67,18 +100,35 @@ export class TicketsController {
     });
   }
 
+  /**
+   * Assign a ticket to an agent.
+   *
+   * @remarks
+   *
+   * Assigns a ticket to a specific agent.
+   *
+   * Allows only users with roles <b>Admin</b>, <b>Coordinator</b>, and <b>Agent</b> to access this endpoint.
+   */
   @Patch('assign/:ticketId')
   @Roles('Admin', 'Coordinator', 'Agent')
   @UseGuards(OwnTicketGuard)
   @UseInterceptors(TicketStatusEventInterceptor)
   async assignTicket(
     @Param('ticketId') ticketId: string,
-    @Body(AssignedTicketPipe)
-    assignedTicketDto: AssignedTicketDto,
+    @Body(AssignedTicketPipe) assignedTicketDto: AssignedTicketDto,
   ): Promise<TicketDocument> {
-    return await this.ticketsService.update(ticketId, assignedTicketDto);
+    return await this.ticketsService.assignTicket(ticketId, assignedTicketDto);
   }
 
+  /**
+   * Transfer a ticket to a different department.
+   *
+   * @remarks
+   *
+   * Transfers a ticket to another department within the organization.
+   *
+   * Allows only users with roles <b>Admin</b>, <b>Coordinator</b>, and <b>Agent</b> to access this endpoint.
+   */
   @Patch('transfer-department/:ticketId')
   @Roles('Admin', 'Coordinator', 'Agent')
   @UseGuards(OwnTicketGuard)
@@ -90,6 +140,15 @@ export class TicketsController {
     return await this.ticketsService.update(ticketId, updateTicketDto);
   }
 
+  /**
+   * Transfer a ticket to a different support level.
+   *
+   * @remarks
+   *
+   * Transfers a ticket to another support level within the organization.
+   *
+   * Allows only users with roles <b>Admin</b>, <b>Coordinator</b>, and <b>Agent</b> to access this endpoint.
+   */
   @Patch('transfer-level/:ticketId')
   @Roles('Admin', 'Coordinator', 'Agent')
   @UseGuards(OwnTicketGuard)

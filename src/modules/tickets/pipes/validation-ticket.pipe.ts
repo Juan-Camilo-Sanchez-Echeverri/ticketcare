@@ -25,14 +25,13 @@ export class ValidationTicketPipe implements PipeTransform {
   ) {}
 
   async transform(value: CreateTicketDto): Promise<CreateTicketDto> {
-    const { supportDepartment } = value;
+    const { supportDepartment, businessContractor } = value;
 
-    const contractorId = this.request.params.contractorId;
     const requestingUser = extractUserFromRequest(this.request);
 
     const department = await this.departmentsService.findOneByQuery({
       _id: supportDepartment,
-      businessContractor: new Types.ObjectId(contractorId),
+      businessContractor: new Types.ObjectId(businessContractor),
     });
 
     if (!department) {
@@ -45,7 +44,7 @@ export class ValidationTicketPipe implements PipeTransform {
       ...value,
       requestingUser: String(requestingUser._id),
       requestingUserInfo: requestingUser,
-      businessContractor: contractorId,
+      businessContractor,
       supportLevel,
     };
 
