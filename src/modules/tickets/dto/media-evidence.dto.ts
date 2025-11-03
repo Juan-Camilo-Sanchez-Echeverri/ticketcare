@@ -1,13 +1,17 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class MediaEvidenceDto {
+  /**
+   * Name of the file
+   */
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
   nameFile?: string;
 
+  /**
+   * URL of the file
+   */
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
   url?: string;
 }

@@ -11,7 +11,13 @@ import {
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-import { AllRoles, ApiAuthResponses, Roles } from '@common/decorators';
+import {
+  AllRoles,
+  ApiAuthResponses,
+  ApiCreatedResponseWrapper,
+  ApiOkResponseWrapper,
+  Roles,
+} from '@common/decorators';
 
 import { OwnTicketGuard } from '../guards';
 
@@ -39,6 +45,7 @@ import {
   TicketResponseInterceptor,
   TicketStatusEventInterceptor,
 } from '../interceptors';
+import { TicketResponse } from '../responses/ticket.response';
 
 @ApiBearerAuth()
 @ApiAuthResponses()
@@ -60,6 +67,7 @@ export class TicketsController {
   @Get(':ticketId')
   @AllRoles()
   @UseGuards(OwnTicketGuard)
+  @ApiOkResponseWrapper(TicketResponse, { isArray: false })
   async findOneById(
     @Param('ticketId') ticketId: string,
   ): Promise<TicketDocument> {
@@ -77,6 +85,7 @@ export class TicketsController {
    */
   @Post()
   @AllRoles()
+  @ApiCreatedResponseWrapper(TicketResponse)
   @UseInterceptors(TicketCreationEventInterceptor)
   async create(
     @Body(ValidationTicketPipe) createTicketDto: CreateTicketDto,
@@ -97,6 +106,7 @@ export class TicketsController {
   @Roles('Admin', 'Coordinator', 'Agent')
   @UseGuards(OwnTicketGuard)
   @UseInterceptors(TicketStatusEventInterceptor)
+  @ApiOkResponseWrapper(TicketResponse, { isArray: false })
   async update(
     @Param('ticketId') ticketId: string,
     @Body() updateTicketDto: UpdateTicketDto,
@@ -117,6 +127,7 @@ export class TicketsController {
   @Roles('Admin', 'Coordinator', 'Agent')
   @UseGuards(OwnTicketGuard)
   @UseInterceptors(TicketStatusEventInterceptor)
+  @ApiOkResponseWrapper(TicketResponse, { isArray: false })
   async assignTicket(
     @Param('ticketId') ticketId: string,
     @Body(AssignedTicketPipe) assignedTicketDto: AssignedTicketDto,
@@ -137,6 +148,7 @@ export class TicketsController {
   @Roles('Admin', 'Coordinator', 'Agent')
   @UseGuards(OwnTicketGuard)
   @UseInterceptors(TicketStatusEventInterceptor)
+  @ApiOkResponseWrapper(TicketResponse, { isArray: false })
   async transferDepartment(
     @Param('ticketId') ticketId: string,
     @Body(TransferDepartmentPipe) transferDto: TransferDepartmentDto,
@@ -157,6 +169,7 @@ export class TicketsController {
   @Roles('Admin', 'Coordinator', 'Agent')
   @UseGuards(OwnTicketGuard)
   @UseInterceptors(TicketStatusEventInterceptor)
+  @ApiOkResponseWrapper(TicketResponse, { isArray: false })
   async transferLevel(
     @Param('ticketId') ticketId: string,
     @Body(TransferLevelPipe) transferDto: TransferLevelDto,

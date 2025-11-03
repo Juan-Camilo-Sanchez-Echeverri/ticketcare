@@ -12,7 +12,7 @@ import { Type } from 'class-transformer';
 
 import { TypeContent, StatusTicket } from '../enums';
 
-class ContentDto {
+export class ContentDto {
   @ApiHideProperty()
   type?: TypeContent;
 

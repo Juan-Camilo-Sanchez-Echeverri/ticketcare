@@ -9,13 +9,22 @@ import { TypeContent } from '../enums';
 
 @Schema()
 export class Content {
+  /**
+   * Type of the content
+   */
   @Prop({ enum: TypeContent })
   type: TypeContent;
 
+  /**
+   * Message of the content
+   */
   @Prop()
   message: string;
 
-  @Prop({ default: undefined })
+  /**
+   * URLs associated with the content
+   */
+  @Prop({ default: [] })
   urls: string[];
 }
 
@@ -23,6 +32,9 @@ export const ContentSchema = SchemaFactory.createForClass(Content);
 
 @Schema({ timestamps: true })
 export class Activity extends BaseSchema {
+  /**
+   * Content of the activity
+   */
   @Prop({ type: ContentSchema, _id: false })
   content: Content;
 

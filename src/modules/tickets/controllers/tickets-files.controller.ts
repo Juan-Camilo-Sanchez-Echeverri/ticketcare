@@ -14,6 +14,8 @@ import {
 
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 
+import { FILE_EXTENSIONS } from '@common/constants';
+
 import { UploadInterceptor } from '@common/interceptors/upload.interceptor';
 
 import { FilesValidationPipe } from '@common/pipes';
@@ -22,6 +24,7 @@ import {
   AllRoles,
   ApiAuthResponses,
   ApiNoContentResponseWrapper,
+  ApiOkResponseWrapper,
 } from '@common/decorators';
 
 import { StorageService } from '@modules/storage/storage.service';
@@ -40,6 +43,7 @@ import {
   TicketResponseInterceptor,
   TicketActivityEventInterceptor,
 } from '../interceptors';
+import { TicketResponse } from '../responses/ticket.response';
 
 @ApiBearerAuth()
 @ApiAuthResponses()
@@ -66,7 +70,14 @@ export class TicketsFilesController {
   @UseGuards(OwnTicketGuard)
   @ApiBody({ type: EvidenceDto })
   @ApiConsumes('multipart/form-data')
-  @UploadInterceptor({ type: 'multiple', fieldName: 'files' })
+  @UploadInterceptor({
+    type: 'multiple',
+    fieldName: 'files',
+    maxCount: 10,
+    maxSizeMB: 50,
+    allowedMimeTypes: FILE_EXTENSIONS,
+  })
+  @ApiOkResponseWrapper(TicketResponse, { isArray: false })
   async addEvidence(
     @Body(EvidenceTicketPipe) evidenceDto: EvidenceDto,
     @Param('ticketId') ticketId: string,
@@ -107,6 +118,7 @@ export class TicketsFilesController {
   @AllRoles()
   @UseGuards(OwnTicketGuard)
   @ApiConsumes('multipart/form-data')
+  @ApiOkResponseWrapper(TicketResponse, { isArray: false })
   @UseInterceptors(TicketActivityEventInterceptor)
   @UploadInterceptor({ type: 'multiple', fieldName: 'files' })
   async addActivity(
@@ -146,6 +158,7 @@ export class TicketsFilesController {
   @Patch(':ticketId/activity/:activityId')
   @ApiConsumes('multipart/form-data')
   @UseGuards(OwnTicketGuard, OwnActivityTicketGuard)
+  @ApiOkResponseWrapper(TicketResponse, { isArray: false })
   @UploadInterceptor({ type: 'multiple', fieldName: 'files' })
   async updateActivity(
     @Param('ticketId') ticketId: string,

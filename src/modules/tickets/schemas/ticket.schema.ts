@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
 
+import { BaseSchema } from '@common/database';
+
 import type { SupportLevelDocument } from '@modules/support-levels/schemas/support-level.schema';
 import type { BusinessClientDocument } from '@modules/business-clients/schemas/business-client.schema';
 import type { BusinessContractorDocument } from '@modules/business-contractors/schemas/business-contractor.schema';
@@ -17,14 +19,23 @@ type UserReference = Pick<
   '_id' | 'name' | 'lastName' | 'email' | 'phone'
 >;
 
-@Schema({ timestamps: true })
-export class Ticket {
+@Schema({ timestamps: true, versionKey: false })
+export class Ticket extends BaseSchema {
+  /**
+   * Serial number of the ticket
+   */
   @Prop()
   serial: string;
 
+  /**
+   * Title of the ticket
+   */
   @Prop({ required: true })
   title: string;
 
+  /**
+   * Description of the ticket
+   */
   @Prop({ required: true })
   description: string;
 
@@ -34,9 +45,15 @@ export class Ticket {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   requestingUser: UserReference;
 
+  /**
+   * Status of the ticket
+   */
   @Prop({ enum: StatusTicket, default: StatusTicket.OPEN })
   status: StatusTicket;
 
+  /**
+   * Priority set by the user
+   */
   @Prop({ enum: PriorityTicket, default: PriorityTicket.LOW })
   priorityUser: PriorityTicket;
 
@@ -55,6 +72,9 @@ export class Ticket {
     '_id' | 'name' | 'businessContractors'
   >;
 
+  /**
+   * Evidence associated with the ticket
+   */
   @Prop({ type: EvidenceSchema, _id: false })
   evidence: Evidence;
 
@@ -67,6 +87,9 @@ export class Ticket {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'BusinessContractor' })
   businessContractor: Pick<BusinessContractorDocument, '_id' | 'name'>;
 
+  /**
+   * Internal priority set by support staff
+   */
   @Prop({ enum: PriorityTicket, default: PriorityTicket.LOW })
   priorityInternal: PriorityTicket;
 }

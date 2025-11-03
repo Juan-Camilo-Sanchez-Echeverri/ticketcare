@@ -2,7 +2,12 @@ import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-import { ApiAuthResponses, CurrentUser, Roles } from '@common/decorators';
+import {
+  ApiAuthResponses,
+  ApiOkResponseWrapper,
+  CurrentUser,
+  Roles,
+} from '@common/decorators';
 
 import { FilterTicketDto } from '../dto';
 
@@ -11,6 +16,7 @@ import { FilterTicketsUnassignedPipe } from '../pipes';
 import { TicketsService } from '../tickets.service';
 
 import { TicketResponseInterceptor } from '../interceptors';
+import { TicketResponse } from '../responses/ticket.response';
 
 @ApiBearerAuth()
 @ApiAuthResponses()
@@ -32,6 +38,7 @@ export class TicketsListController {
    */
   @Get('unassigned-tickets/:contractorId')
   @Roles('Admin', 'Coordinator', 'Agent')
+  @ApiOkResponseWrapper(TicketResponse, { isArray: true })
   async findAllByContractorId(
     @Param('contractorId') _contractorId: string,
     @Query(FilterTicketsUnassignedPipe)
@@ -52,6 +59,7 @@ export class TicketsListController {
    */
   @Get('assigned-tickets/:contractorId')
   @Roles('Agent')
+  @ApiOkResponseWrapper(TicketResponse, { isArray: true })
   async getMeTicketsAssigned(
     @Param('contractorId') _contractorId: string,
     @Query() query: FilterTicketDto,
@@ -73,6 +81,7 @@ export class TicketsListController {
    */
   @Get('my-tickets/:contractorId')
   @Roles('Client')
+  @ApiOkResponseWrapper(TicketResponse, { isArray: true })
   async getMyTickets(
     @Param('contractorId') _contractorId: string,
     @Query() query: FilterTicketDto,
