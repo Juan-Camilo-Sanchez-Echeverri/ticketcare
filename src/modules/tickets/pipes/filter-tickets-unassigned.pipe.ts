@@ -8,12 +8,12 @@ import { UserRole } from '@common/enums';
 
 import { extractUserFromRequest } from '@common/helpers';
 
-import { PaginationTicketDto } from '../dto';
+import { FilterTicketDto } from '../dto';
 
 @Injectable()
 export class FilterTicketsUnassignedPipe implements PipeTransform {
   constructor(@Inject(REQUEST) private readonly request: Request) {}
-  transform(value: PaginationTicketDto) {
+  transform(value: FilterTicketDto) {
     const user = extractUserFromRequest(this.request);
 
     value.data = {

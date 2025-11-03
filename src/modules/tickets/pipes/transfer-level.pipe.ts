@@ -16,11 +16,9 @@ import { SupportLevelsService } from '@modules/support-levels/support-levels.ser
 import { SupportLevelDocument } from '@modules/support-levels/schemas/support-level.schema';
 import { UserDocument } from '@modules/users/schemas';
 
-import { UpdateTicketDto } from '../dto';
+import { TransferLevelDto } from '../dto';
 
 import { TicketErrors } from '../errors/tickets.errors';
-
-import { StatusTicket } from '../enums';
 
 import { TicketsService } from '../tickets.service';
 
@@ -34,14 +32,12 @@ export class TransferLevelPipe implements PipeTransform {
     private readonly levelsService: SupportLevelsService,
   ) {}
 
-  async transform(value: UpdateTicketDto) {
+  async transform(value: TransferLevelDto) {
     const { supportLevel } = value;
     const ticketId = this.request.params.ticketId;
 
-    value.status = StatusTicket.CHANGE_LEVEL;
-
     const ticket = await this.ticketsService.findOneById(ticketId);
-    const levelInfo = await this.levelsService.findOneById(supportLevel!);
+    const levelInfo = await this.levelsService.findOneById(supportLevel);
 
     if (String(ticket.supportLevel._id) === supportLevel) {
       throw new BadRequestException(TicketErrors.TICKET_ALREADY_IN_LEVEL);
@@ -54,14 +50,16 @@ export class TransferLevelPipe implements PipeTransform {
     if (user.role === UserRole.Agent) {
       this.handleAgentTransfer(value, levelInfo, user, ticket);
     } else {
-      this.setDefaultTransferQuery(value, levelInfo);
+      value.unsetAssignedUser = true;
+      value.levelInfo = levelInfo;
+      value.ticket = ticket;
     }
 
     return value;
   }
 
   private handleAgentTransfer(
-    value: UpdateTicketDto,
+    value: TransferLevelDto,
     levelInfo: SupportLevelDocument,
     user: UserDocument,
     ticket: TicketDocument,
@@ -75,35 +73,13 @@ export class TransferLevelPipe implements PipeTransform {
     const isMeTicket = ticket?.assignedUser?._id === user._id;
 
     if (isLevel && isMeTicket) {
-      this.setTransferQuery(value, levelInfo);
+      value.unsetAssignedUser = false;
     } else {
-      this.setDefaultTransferQuery(value, levelInfo);
+      value.unsetAssignedUser = true;
     }
-  }
 
-  private setDefaultTransferQuery(
-    value: UpdateTicketDto,
-    levelInfo: SupportLevelDocument,
-  ) {
-    value.query = {
-      $set: {
-        ...value,
-        supportLevel: levelInfo._id,
-      },
-      $unset: { assignedUser: '' },
-    };
-  }
-
-  private setTransferQuery(
-    value: UpdateTicketDto,
-    levelInfo: SupportLevelDocument,
-  ) {
-    value.query = {
-      $set: {
-        ...value,
-        supportLevel: levelInfo._id,
-      },
-    };
+    value.levelInfo = levelInfo;
+    value.ticket = ticket;
   }
 
   private checkLevelTransferPermission(

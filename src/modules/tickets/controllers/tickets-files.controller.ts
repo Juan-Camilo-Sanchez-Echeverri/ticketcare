@@ -89,16 +89,9 @@ export class TicketsFilesController {
       }),
     );
 
-    const updatedEvidenceDto = {
-      ...evidenceDto,
-      multimedia,
-      query: {
-        ...evidenceDto.query,
-        $push: { 'evidence.multimedia': { $each: multimedia } },
-      },
-    };
+    evidenceDto.multimedia = multimedia;
 
-    return await this.ticketsService.update(ticketId, updatedEvidenceDto);
+    return await this.ticketsService.addEvidence(ticketId, evidenceDto);
   }
 
   /**

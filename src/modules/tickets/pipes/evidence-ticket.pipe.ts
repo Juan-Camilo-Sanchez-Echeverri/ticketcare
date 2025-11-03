@@ -23,13 +23,6 @@ export class EvidenceTicketPipe implements PipeTransform {
       ...value,
       contractorId: String(ticket.businessContractor._id),
       multimedia: value.multimedia,
-      query: {
-        $set: {
-          'evidence.user': value.user,
-          'evidence.password': value.password,
-          'evidence.url': value.url,
-        },
-      },
     };
 
     return value;

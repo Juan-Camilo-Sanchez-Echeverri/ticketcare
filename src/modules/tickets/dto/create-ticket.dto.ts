@@ -1,9 +1,10 @@
+import { ApiHideProperty } from '@nestjs/swagger';
+
 import { IsEnum, IsMongoId, IsOptional } from 'class-validator';
 
 import { IsNotBlank } from '@common/decorators';
 
 import { PriorityTicket } from '../enums';
-import { ApiHideProperty } from '@nestjs/swagger';
 
 export class CreateTicketDto {
   @ApiHideProperty()

@@ -22,7 +22,13 @@ import {
   TransferLevelPipe,
 } from '../pipes';
 
-import { AssignedTicketDto, CreateTicketDto, UpdateTicketDto } from '../dto';
+import {
+  CreateTicketDto,
+  TransferDepartmentDto,
+  TransferLevelDto,
+  UpdateTicketDto,
+  AssignedTicketDto,
+} from '../dto';
 
 import { TicketDocument } from '../schemas';
 
@@ -95,9 +101,7 @@ export class TicketsController {
     @Param('ticketId') ticketId: string,
     @Body() updateTicketDto: UpdateTicketDto,
   ): Promise<TicketDocument> {
-    return await this.ticketsService.update(ticketId, {
-      query: updateTicketDto,
-    });
+    return await this.ticketsService.update(ticketId, updateTicketDto);
   }
 
   /**
@@ -135,9 +139,9 @@ export class TicketsController {
   @UseInterceptors(TicketStatusEventInterceptor)
   async transferDepartment(
     @Param('ticketId') ticketId: string,
-    @Body(TransferDepartmentPipe) updateTicketDto: UpdateTicketDto,
+    @Body(TransferDepartmentPipe) transferDto: TransferDepartmentDto,
   ): Promise<TicketDocument> {
-    return await this.ticketsService.update(ticketId, updateTicketDto);
+    return await this.ticketsService.transferDepartment(ticketId, transferDto);
   }
 
   /**
@@ -155,8 +159,8 @@ export class TicketsController {
   @UseInterceptors(TicketStatusEventInterceptor)
   async transferLevel(
     @Param('ticketId') ticketId: string,
-    @Body(TransferLevelPipe) updateTicketDto: UpdateTicketDto,
+    @Body(TransferLevelPipe) transferDto: TransferLevelDto,
   ): Promise<TicketDocument> {
-    return await this.ticketsService.update(ticketId, updateTicketDto);
+    return await this.ticketsService.transferLevel(ticketId, transferDto);
   }
 }

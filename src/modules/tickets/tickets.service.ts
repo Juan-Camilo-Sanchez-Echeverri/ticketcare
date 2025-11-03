@@ -12,7 +12,10 @@ import {
   ActivityDto,
   AssignedTicketDto,
   CreateTicketDto,
-  PaginationTicketDto,
+  EvidenceDto,
+  FilterTicketDto,
+  TransferDepartmentDto,
+  TransferLevelDto,
   UpdateTicketDto,
 } from './dto';
 
@@ -20,6 +23,7 @@ import {
   getTicketSerial,
   messageAssignTicket,
   messageTransferAgent,
+  messageTransferDepartment,
   validateHourDifference,
 } from './helpers';
 
@@ -61,7 +65,7 @@ export class TicketsService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  async findPaginate(query: PaginationTicketDto) {
+  async findPaginate(query: FilterTicketDto) {
     return await this.repository.findPaginate(query, {
       populate: this.pathsPopulate,
     });
@@ -125,6 +129,96 @@ export class TicketsService {
     );
 
     if (!ticketUpdate) throw new NotFoundException(TicketErrors.NOT_FOUND);
+
+    return this.populateTicket(ticketUpdate);
+  }
+
+  async addEvidence(
+    ticketId: string,
+    evidenceDto: EvidenceDto,
+  ): Promise<TicketDocument> {
+    const updateQuery = {
+      $set: {
+        'evidence.user': evidenceDto.user,
+        'evidence.password': evidenceDto.password,
+        'evidence.url': evidenceDto.url,
+      },
+      $push: {
+        'evidence.multimedia': {
+          $each: evidenceDto.multimedia,
+        },
+      },
+    };
+
+    const ticketUpdate = await this.repository.findByIdAndUpdate(
+      ticketId,
+      updateQuery,
+    );
+
+    if (!ticketUpdate) throw new NotFoundException(TicketErrors.NOT_FOUND);
+
+    return this.populateTicket(ticketUpdate);
+  }
+
+  async transferDepartment(
+    ticketId: string,
+    transferDto: TransferDepartmentDto,
+  ): Promise<TicketDocument> {
+    const { departmentInfo, requestingUser, unsetAssignedUser } = transferDto;
+
+    const updateQuery = {
+      $set: {
+        supportDepartment: departmentInfo._id,
+        supportLevel: departmentInfo.defaultLevel._id,
+        status: StatusTicket.CHANGE_DEPARTMENT,
+      },
+      $push: {
+        activity: {
+          content: {
+            type: TypeContent.TRANSFER_DEPARTMENT,
+            message: messageTransferDepartment(
+              requestingUser,
+              transferDto.ticket,
+              departmentInfo,
+            ),
+            user: requestingUser._id,
+          },
+        },
+      },
+      ...(unsetAssignedUser ? { $unset: { assignedUser: '' } } : {}),
+    };
+
+    const ticketUpdate = await this.repository.findByIdAndUpdate(
+      ticketId,
+      updateQuery,
+    );
+
+    if (!ticketUpdate) throw new NotFoundException(TicketErrors.NOT_FOUND);
+
+    return this.populateTicket(ticketUpdate);
+  }
+
+  async transferLevel(
+    ticketId: string,
+    transferDto: TransferLevelDto,
+  ): Promise<TicketDocument> {
+    const { levelInfo, unsetAssignedUser } = transferDto;
+
+    const updateQuery = {
+      $set: {
+        supportLevel: levelInfo._id,
+        status: StatusTicket.CHANGE_LEVEL,
+      },
+      ...(unsetAssignedUser ? { $unset: { assignedUser: '' } } : {}),
+    };
+
+    const ticketUpdate = await this.repository.findByIdAndUpdate(
+      ticketId,
+      updateQuery,
+    );
+
+    if (!ticketUpdate)
+      throw new NotFoundException(TicketErrors.NOT_FOUND.message);
 
     return this.populateTicket(ticketUpdate);
   }

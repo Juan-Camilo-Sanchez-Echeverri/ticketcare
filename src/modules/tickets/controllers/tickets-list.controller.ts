@@ -4,7 +4,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { ApiAuthResponses, CurrentUser, Roles } from '@common/decorators';
 
-import { PaginationTicketDto } from '../dto';
+import { FilterTicketDto } from '../dto';
 
 import { FilterTicketsUnassignedPipe } from '../pipes';
 
@@ -35,7 +35,7 @@ export class TicketsListController {
   async findAllByContractorId(
     @Param('contractorId') _contractorId: string,
     @Query(FilterTicketsUnassignedPipe)
-    query: PaginationTicketDto,
+    query: FilterTicketDto,
   ) {
     return await this.ticketsService.findPaginate(query);
   }
@@ -54,7 +54,7 @@ export class TicketsListController {
   @Roles('Agent')
   async getMeTicketsAssigned(
     @Param('contractorId') _contractorId: string,
-    @Query() query: PaginationTicketDto,
+    @Query() query: FilterTicketDto,
     @CurrentUser('_id') userId: string,
   ) {
     query.data = { ...query.data, assignedUser: userId };
@@ -75,7 +75,7 @@ export class TicketsListController {
   @Roles('Client')
   async getMyTickets(
     @Param('contractorId') _contractorId: string,
-    @Query() query: PaginationTicketDto,
+    @Query() query: FilterTicketDto,
     @CurrentUser('_id') userId: string,
   ) {
     query.data = { ...query.data, requestingUser: userId };

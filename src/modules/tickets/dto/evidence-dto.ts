@@ -1,11 +1,8 @@
-import { IsOptional } from 'class-validator';
-
-import type { FilterQuery } from 'mongoose';
-
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
+import { IsOptional } from 'class-validator';
+
 import { MediaEvidenceDto } from './media-evidence.dto';
-import { TicketDocument } from '../schemas';
 
 export class EvidenceDto {
   /**
@@ -25,9 +22,6 @@ export class EvidenceDto {
    */
   @IsOptional()
   password?: string;
-
-  @ApiHideProperty()
-  query?: FilterQuery<TicketDocument>;
 
   @ApiProperty({ type: 'array', items: { type: 'string', format: 'binary' } })
   files?: string[];

@@ -19,11 +19,7 @@ import { UserDocument } from '@modules/users/schemas';
 
 import { TicketErrors } from '../errors/tickets.errors';
 
-import { UpdateTicketDto } from '../dto';
-
-import { StatusTicket, TypeContent } from '../enums';
-
-import { messageTransferDepartment } from '../helpers';
+import { TransferDepartmentDto } from '../dto';
 
 import { TicketsService } from '../tickets.service';
 
@@ -37,15 +33,14 @@ export class TransferDepartmentPipe implements PipeTransform {
     private readonly departmentsService: SupportDepartmentsService,
   ) {}
 
-  async transform(value: UpdateTicketDto) {
+  async transform(value: TransferDepartmentDto) {
     const { supportDepartment } = value;
     const ticketId = this.request.params.ticketId;
 
     const ticket = await this.ticketsService.findOneById(ticketId);
 
-    const departmentInfo = await this.departmentsService.findOneById(
-      supportDepartment!,
-    );
+    const departmentInfo =
+      await this.departmentsService.findOneById(supportDepartment);
 
     if (String(ticket.supportDepartment._id) === supportDepartment) {
       throw new BadRequestException(TicketErrors.TICKET_ALREADY_IN_DEPARTMENT);
@@ -58,7 +53,10 @@ export class TransferDepartmentPipe implements PipeTransform {
     if (user.role === UserRole.Agent) {
       this.handleAgentTransfer(ticket, user, value, departmentInfo);
     } else {
-      this.setDefaultTransferQuery(value, user, ticket, departmentInfo);
+      value.unsetAssignedUser = true;
+      value.requestingUser = user;
+      value.departmentInfo = departmentInfo;
+      value.ticket = ticket;
     }
 
     return value;
@@ -67,7 +65,7 @@ export class TransferDepartmentPipe implements PipeTransform {
   private handleAgentTransfer(
     ticket: TicketDocument,
     user: UserDocument,
-    value: UpdateTicketDto,
+    value: TransferDepartmentDto,
     departmentInfo: SupportDepartmentDocument,
   ) {
     const isDepartment = user.details.supportDepartments.some(
@@ -76,57 +74,14 @@ export class TransferDepartmentPipe implements PipeTransform {
     const isMeTicket = ticket?.assignedUser?._id === user._id;
 
     if (isDepartment && isMeTicket) {
-      this.setTransferQuery(value, departmentInfo, user, ticket);
+      value.unsetAssignedUser = false;
     } else {
-      this.setDefaultTransferQuery(value, user, ticket, departmentInfo);
+      value.unsetAssignedUser = true;
     }
-  }
 
-  private setTransferQuery(
-    value: UpdateTicketDto,
-    departmentInfo: SupportDepartmentDocument,
-    user: UserDocument,
-    ticket: TicketDocument,
-  ) {
-    value.query = {
-      $set: {
-        ...value,
-        supportLevel: departmentInfo.defaultLevel,
-        status: StatusTicket.CHANGE_DEPARTMENT,
-      },
-      $push: {
-        activity: {
-          content: {
-            type: TypeContent.TRANSFER_DEPARTMENT,
-            message: messageTransferDepartment(user, ticket, departmentInfo),
-          },
-        },
-      },
-    };
-  }
-
-  private setDefaultTransferQuery(
-    value: UpdateTicketDto,
-    user: UserDocument,
-    ticket: TicketDocument,
-    departmentInfo: SupportDepartmentDocument,
-  ) {
-    value.query = {
-      $set: {
-        ...value,
-        supportLevel: departmentInfo.defaultLevel._id,
-        status: StatusTicket.CHANGE_DEPARTMENT,
-      },
-      $unset: { assignedUser: '' },
-      $push: {
-        activity: {
-          content: {
-            type: TypeContent.TRANSFER_DEPARTMENT,
-            message: messageTransferDepartment(user, ticket, departmentInfo),
-          },
-        },
-      },
-    };
+    value.requestingUser = user;
+    value.departmentInfo = departmentInfo;
+    value.ticket = ticket;
   }
 
   private checkDepartmentTransferPermission(
