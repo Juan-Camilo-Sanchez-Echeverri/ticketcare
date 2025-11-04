@@ -42,7 +42,6 @@ import { TicketsService } from '../tickets.service';
 
 import {
   TicketCreationEventInterceptor,
-  TicketResponseInterceptor,
   TicketStatusEventInterceptor,
 } from '../interceptors';
 import { TicketResponse } from '../responses/ticket.response';
@@ -51,7 +50,6 @@ import { TicketResponse } from '../responses/ticket.response';
 @ApiAuthResponses()
 @ApiTags('tickets')
 @Controller('tickets')
-@UseInterceptors(TicketResponseInterceptor)
 export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 

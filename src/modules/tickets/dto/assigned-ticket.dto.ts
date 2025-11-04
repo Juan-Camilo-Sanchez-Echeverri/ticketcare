@@ -1,5 +1,6 @@
-import { IsMongoId } from 'class-validator';
 import { ApiHideProperty } from '@nestjs/swagger';
+
+import { IsMongoId } from 'class-validator';
 
 import type { UserDocument } from '@modules/users/schemas';
 

@@ -9,8 +9,6 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 
-import { Types } from 'mongoose';
-
 import { extractUserFromRequest } from '@common/helpers';
 
 import { SupportDepartmentsService } from '@modules/support-departments/support-departments.service';
@@ -31,7 +29,7 @@ export class ValidationTicketPipe implements PipeTransform {
 
     const department = await this.departmentsService.findOneByQuery({
       _id: supportDepartment,
-      businessContractor: new Types.ObjectId(businessContractor),
+      businessContractor: businessContractor!,
     });
 
     if (!department) {
@@ -43,7 +41,6 @@ export class ValidationTicketPipe implements PipeTransform {
     value = {
       ...value,
       requestingUser: String(requestingUser._id),
-      requestingUserInfo: requestingUser,
       businessContractor,
       supportLevel,
     };

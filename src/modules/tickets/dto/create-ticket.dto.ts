@@ -4,7 +4,7 @@ import { IsEnum, IsMongoId, IsOptional } from 'class-validator';
 
 import { IsNotBlank } from '@common/decorators';
 
-import { PriorityTicket } from '../enums';
+import { PriorityTicket, TicketSource } from '../enums';
 
 export class CreateTicketDto {
   @ApiHideProperty()
@@ -17,23 +17,23 @@ export class CreateTicketDto {
   description: string;
 
   @IsMongoId()
-  supportDepartment: string;
+  supportDepartment: string | null;
 
   @IsMongoId()
-  businessClient: string;
+  businessClient: string | null;
 
   @IsOptional()
   @IsEnum(PriorityTicket)
   priorityUser?: PriorityTicket;
 
+  @IsEnum(TicketSource)
+  source: TicketSource;
+
   @IsMongoId()
-  businessContractor: string;
+  businessContractor: string | null;
 
   @ApiHideProperty()
   requestingUser?: string;
-
-  @ApiHideProperty()
-  requestingUserInfo: object;
 
   @ApiHideProperty()
   supportLevel?: string;

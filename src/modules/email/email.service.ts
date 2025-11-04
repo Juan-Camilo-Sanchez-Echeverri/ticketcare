@@ -11,8 +11,17 @@ import { simpleParser, ParsedMail } from 'mailparser';
 
 import { imapConfig } from '@configs';
 
+import { UsersService } from '@modules/users/users.service';
+import { TicketsService } from '@modules/tickets/tickets.service';
+import { UserRole } from '../../common/enums';
+import { TicketSource } from '../tickets/enums';
+
 @Injectable()
 export class EmailService implements OnModuleInit, OnModuleDestroy {
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly usersService: UsersService,
+  ) {}
   private readonly logger = new Logger(EmailService.name);
   private client!: ImapFlow;
 
@@ -49,23 +58,69 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
       if (!message || !message.source) continue;
 
       const parsed = await simpleParser(message.source);
-      this.logEmail(parsed);
+      await this.logEmail(parsed);
     }
   }
 
-  private logEmail(email: ParsedMail) {
-    this.logger.log(`Subject: ${email.subject}`);
-    this.logger.log(`From: ${JSON.stringify(email.from?.value)}`);
-    this.logger.log(`➡️ Texto: ${email.text}`);
-    this.logger.log(`➡️ HTML: ${email.html}`);
+  private async logEmail(email: ParsedMail) {
+    const emailFrom = email.from?.value.map((f) => f.address).join(', ');
+    const userName = email.from?.value[0]?.name || 'Usuario';
+    const subject = email.subject || 'Sin asunto';
+    const text = email.text || 'Sin contenido';
+
+    console.table(email);
 
     email.attachments.forEach((att) => {
       this.logger.log(att);
+    });
+
+    let user = await this.usersService.findOneByQuery({ email: emailFrom });
+
+    if (!user) {
+      user = await this.usersService.create({
+        name: userName,
+        email: emailFrom || '<desconocido>',
+        lastName: '',
+        password: this.generateRandomPassword(),
+        role: UserRole.Client,
+        modifiedBy: null,
+      });
+    }
+
+    await this.ticketsService.create({
+      title: subject,
+      description: text,
+      requestingUser: String(user._id),
+      supportDepartment: null,
+      businessClient: null,
+      businessContractor: null,
+      source: TicketSource.EMAIL,
     });
   }
 
   async onModuleDestroy() {
     await this.client.logout();
     this.logger.log('IMAP desconectado');
+  }
+
+  private generateRandomPassword(): string {
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const numbers = '0123456789';
+
+    let password = '';
+    password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+    password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
+    password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+
+    const allChars = uppercase + lowercase + numbers;
+    for (let i = 0; i < 4; i++) {
+      password += allChars.charAt(Math.floor(Math.random() * allChars.length));
+    }
+
+    return password
+      .split('')
+      .sort(() => 0.5 - Math.random())
+      .join('');
   }
 }

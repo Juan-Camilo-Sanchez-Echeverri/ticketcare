@@ -31,7 +31,6 @@ class SupportDepartmentTicketResponse extends PickType(
 class BusinessClientTicketResponse extends PickType(BusinessClientResponse, [
   '_id',
   'name',
-  'businessContractors',
 ] as const) {}
 
 class SupportLevelTicketResponse extends PickType(SupportDepartmentResponse, [

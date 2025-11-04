@@ -9,7 +9,7 @@ import type { BusinessContractorDocument } from '@modules/business-contractors/s
 import type { SupportDepartmentDocument } from '@modules/support-departments/schemas/support-department.schema';
 import type { UserDocument } from '@modules/users/schemas';
 
-import { PriorityTicket, StatusTicket } from '../enums';
+import { PriorityTicket, StatusTicket, TicketSource } from '../enums';
 
 import { Activity, ActivitySchema } from './activity.schema';
 import { Evidence, EvidenceSchema } from './evidence.schema';
@@ -39,8 +39,8 @@ export class Ticket extends BaseSchema {
   @Prop({ required: true })
   description: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  assignedUser: UserReference;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null })
+  assignedUser: UserReference | null;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   requestingUser: UserReference;
@@ -57,6 +57,12 @@ export class Ticket extends BaseSchema {
   @Prop({ enum: PriorityTicket, default: PriorityTicket.LOW })
   priorityUser: PriorityTicket;
 
+  /**
+   * Source/origin of the ticket (platform, email, whatsapp)
+   */
+  @Prop({ enum: TicketSource, default: TicketSource.PLATFORM })
+  source: TicketSource;
+
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'SupportDepartment',
@@ -67,10 +73,7 @@ export class Ticket extends BaseSchema {
   >;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'BusinessClient' })
-  businessClient: Pick<
-    BusinessClientDocument,
-    '_id' | 'name' | 'businessContractors'
-  >;
+  businessClient: Pick<BusinessClientDocument, '_id' | 'name'>;
 
   /**
    * Evidence associated with the ticket

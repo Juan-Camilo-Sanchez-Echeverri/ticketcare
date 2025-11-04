@@ -24,3 +24,9 @@ export enum TypeContent {
   TEXT = 'text',
   MULTIMEDIA = 'multimedia',
 }
+
+export enum TicketSource {
+  PLATFORM = 'platform',
+  EMAIL = 'email',
+  WHATSAPP = 'whatsapp',
+}

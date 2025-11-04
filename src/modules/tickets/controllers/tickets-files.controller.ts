@@ -39,17 +39,14 @@ import { TicketsService } from '../tickets.service';
 
 import { TicketDocument } from '../schemas';
 
-import {
-  TicketResponseInterceptor,
-  TicketActivityEventInterceptor,
-} from '../interceptors';
+import { TicketActivityEventInterceptor } from '../interceptors';
+
 import { TicketResponse } from '../responses/ticket.response';
 
 @ApiBearerAuth()
 @ApiAuthResponses()
 @ApiTags('tickets')
 @Controller('tickets')
-@UseInterceptors(TicketResponseInterceptor)
 export class TicketsFilesController {
   constructor(
     private readonly ticketsService: TicketsService,

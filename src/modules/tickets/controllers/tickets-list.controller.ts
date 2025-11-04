@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
@@ -15,14 +15,12 @@ import { FilterTicketsUnassignedPipe } from '../pipes';
 
 import { TicketsService } from '../tickets.service';
 
-import { TicketResponseInterceptor } from '../interceptors';
 import { TicketResponse } from '../responses/ticket.response';
 
 @ApiBearerAuth()
 @ApiAuthResponses()
 @ApiTags('tickets')
 @Controller('tickets')
-@UseInterceptors(TicketResponseInterceptor)
 export class TicketsListController {
   constructor(private readonly ticketsService: TicketsService) {}
 
