@@ -1,6 +1,6 @@
 import { IsNotBlank } from '../decorators';
 
-export class Address {
+export class AddressDto {
   /**
    * Street address.
    * @example  "Av. Siempre Viva".
