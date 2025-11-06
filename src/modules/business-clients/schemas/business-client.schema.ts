@@ -15,19 +15,19 @@ import { ConflictException } from '@nestjs/common';
   strictQuery: 'throw',
 })
 export class BusinessClient extends BaseSchema {
-  @Prop()
+  @Prop({ unique: true, required: true })
   name: string;
 
   @Prop({ required: true, enum: BusinessDocumentType })
   documentType: BusinessDocumentType;
 
-  @Prop()
+  @Prop({ required: true })
   document: string;
 
-  @Prop()
+  @Prop({ required: true })
   phone: string;
 
-  @Prop()
+  @Prop({ required: true, unique: true })
   email: string;
 
   @Prop({

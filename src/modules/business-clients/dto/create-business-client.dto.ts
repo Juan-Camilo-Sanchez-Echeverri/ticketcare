@@ -11,10 +11,12 @@ import {
 } from 'class-validator';
 
 import { IsNotBlank } from '@common/decorators';
-import { Address, BaseDto } from '@common/dto';
+
+import { AddressDto } from '@common/dto';
+
 import { BusinessDocumentType, TypeActivity } from '@common/enums';
 
-export class CreateBusinessClientDto extends BaseDto {
+export class CreateBusinessClientDto {
   @IsNotBlank()
   name: string;
 
@@ -39,7 +41,7 @@ export class CreateBusinessClientDto extends BaseDto {
   typeActivity: TypeActivity;
 
   @IsNotEmpty()
-  @Type(() => Address)
+  @Type(() => AddressDto)
   @ValidateNested({ each: true })
-  address: Address;
+  address: AddressDto;
 }

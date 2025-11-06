@@ -28,11 +28,12 @@ import {
   UpdateBusinessClientDto,
 } from './dto';
 
-import { FilterBusinessClientPipe } from './pipes';
+import { FilterBusinessClientPipe, ValidateClientRelationsPipe } from './pipes';
 
 import { BusinessClientsService } from './business-clients.service';
 
 import { BusinessClientDocument } from './schemas/business-client.schema';
+
 import { BusinessClientResponse } from './responses/business-clients.response';
 
 @ApiBearerAuth()
@@ -52,7 +53,7 @@ export class BusinessClientsController {
    * Allows only <b>SUPERUSER</b> to access this endpoint.
    */
   @Get()
-  @Roles('SuperUser')
+  @AllRoles()
   @ApiOkResponseWrapper(BusinessClientResponse, { isArray: true })
   async filter(
     @Query(FilterBusinessClientPipe) query: FilterBusinessClientDto,
@@ -85,9 +86,10 @@ export class BusinessClientsController {
    */
   @Post()
   @ApiCreatedResponseWrapper(BusinessClientResponse)
-  @Roles('SuperUser', 'Admin', 'Coordinator')
+  @Roles('SuperUser', 'Admin')
   async create(
-    @Body() createBusinessClientDto: CreateBusinessClientDto,
+    @Body(ValidateClientRelationsPipe)
+    createBusinessClientDto: CreateBusinessClientDto,
   ): Promise<BusinessClientDocument> {
     return await this.businessClientsService.create(createBusinessClientDto);
   }
@@ -100,11 +102,12 @@ export class BusinessClientsController {
    * Allows <b>SUPERUSER</b>, <b>ADMIN</b> and <b>COORDINATOR</b> users to update business clients.
    */
   @Patch(':clientId')
-  @Roles('SuperUser', 'Admin', 'Coordinator')
+  @Roles('SuperUser', 'Admin')
   @ApiOkResponseWrapper(BusinessClientResponse, { isArray: false })
   async update(
     @Param('clientId') clientId: string,
-    @Body() updateBusinessClientDto: UpdateBusinessClientDto,
+    @Body(ValidateClientRelationsPipe)
+    updateBusinessClientDto: UpdateBusinessClientDto,
   ): Promise<BusinessClientDocument> {
     return await this.businessClientsService.update(
       clientId,
