@@ -14,8 +14,6 @@ import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 
 import { IS_PUBLIC_KEY } from '@common/decorators';
 
-import { Status } from '@common/enums';
-
 import { UsersService } from '@modules/users/users.service';
 import { UserDocument } from '@modules/users/schemas/user.schema';
 
@@ -88,13 +86,7 @@ export class AuthGuard implements CanActivate {
   private async checkUserValid(payload: PayloadToken): Promise<UserDocument> {
     const user = await this.usersService.findOneById(payload.sub);
 
-    if (user.status === Status.INACTIVE) {
-      throw new UnauthorizedException(AuthErrors.USER_INACTIVE);
-    }
-
-    if (user.status === Status.DELETED) {
-      throw new UnauthorizedException(AuthErrors.USER_DELETED);
-    }
+    this.usersService.checkStatusUser(user);
 
     return user;
   }

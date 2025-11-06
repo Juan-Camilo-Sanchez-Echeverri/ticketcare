@@ -118,6 +118,12 @@ export class UsersService implements ICrudService<UserDocument>, OnModuleInit {
     return deletedUser;
   }
 
+  checkStatusUser(user: UserDocument): void {
+    if (user.status === Status.INACTIVE) {
+      throw new NotFoundException(UsersErrors.USER_IS_INACTIVE);
+    }
+  }
+
   private async populateUser(doc: UserDocument): Promise<UserDocument> {
     return doc.populate(this.pathsPopulate);
   }

@@ -48,6 +48,9 @@ export class AuthService {
       role: user.role,
     });
 
+    user.online = true;
+    await user.save();
+
     return { accessToken };
   }
 
