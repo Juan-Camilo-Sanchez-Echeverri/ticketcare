@@ -10,7 +10,7 @@ import { Type } from 'class-transformer';
 
 import { IsNotBlank } from '@common/decorators';
 
-import { Address } from '@common/dto';
+import { AddressDto } from '@common/dto';
 
 import { BusinessDocumentType, Status, TypeActivity } from '@common/enums';
 
@@ -63,7 +63,7 @@ export class CreateBusinessContractorDto {
    * Address of the business contractor.
    */
   @IsNotEmpty()
-  @Type(() => Address)
-  @ValidateNested({ each: true })
-  address: Address;
+  @ValidateNested()
+  @Type(() => AddressDto)
+  address: AddressDto;
 }
