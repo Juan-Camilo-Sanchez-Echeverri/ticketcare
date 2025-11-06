@@ -76,9 +76,9 @@ export class TicketStatusEventInterceptor implements NestInterceptor {
     return this.usersService.findByQuery({
       role: UserRole.Agent,
       status: Status.ACTIVE,
-      'details.supportDepartments': { $in: [ticket.supportDepartment._id] },
-      'details.supportLevels': { $in: [ticket.supportLevel._id] },
-      'details.businessContractors': ticket.businessContractor._id,
+      'details.supportDepartments': { $in: [ticket?.supportDepartment?._id] },
+      'details.supportLevels': { $in: [ticket?.supportLevel?._id] },
+      'details.businessContractors': ticket?.businessContractor?._id,
     });
   }
 

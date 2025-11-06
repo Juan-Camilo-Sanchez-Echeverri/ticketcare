@@ -39,7 +39,7 @@ export class TransferLevelPipe implements PipeTransform {
     const ticket = await this.ticketsService.findOneById(ticketId);
     const levelInfo = await this.levelsService.findOneById(supportLevel);
 
-    if (String(ticket.supportLevel._id) === supportLevel) {
+    if (String(ticket?.supportLevel?._id) === supportLevel) {
       throw new BadRequestException(TicketErrors.TICKET_ALREADY_IN_LEVEL);
     }
 
@@ -86,13 +86,13 @@ export class TransferLevelPipe implements PipeTransform {
     ticket: TicketDocument,
     levelInfo: SupportLevelDocument,
   ) {
-    if (ticket.businessContractor._id !== levelInfo.businessContractor._id) {
+    if (ticket.businessContractor?._id !== levelInfo.businessContractor._id) {
       throw new BadRequestException(TicketErrors.NO_PERMISSION_TRANSFER_LEVEL);
     }
 
     const departmentTicket = ticket.supportDepartment;
 
-    const isDepartment = departmentTicket.supportLevels.some(
+    const isDepartment = departmentTicket?.supportLevels.some(
       (level) => String(level._id) === String(levelInfo._id),
     );
 

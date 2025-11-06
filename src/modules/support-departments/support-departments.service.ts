@@ -49,7 +49,9 @@ export class SupportDepartmentsService {
   async findPaginate(
     filterDto: FilterSupportDepartmentDto,
   ): Promise<PaginateResult<SupportDepartmentDocument>> {
-    return this.repository.findPaginate(filterDto);
+    return this.repository.findPaginate(filterDto, {
+      populate: this.pathsPopulate,
+    });
   }
 
   async create(

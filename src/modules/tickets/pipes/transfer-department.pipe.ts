@@ -42,7 +42,7 @@ export class TransferDepartmentPipe implements PipeTransform {
     const departmentInfo =
       await this.departmentsService.findOneById(supportDepartment);
 
-    if (String(ticket.supportDepartment._id) === supportDepartment) {
+    if (String(ticket?.supportDepartment?._id) === supportDepartment) {
       throw new BadRequestException(TicketErrors.TICKET_ALREADY_IN_DEPARTMENT);
     }
 
@@ -89,7 +89,7 @@ export class TransferDepartmentPipe implements PipeTransform {
     departmentInfo: SupportDepartmentDocument,
   ) {
     if (
-      ticket.businessContractor._id !== departmentInfo.businessContractor._id
+      ticket?.businessContractor?._id !== departmentInfo.businessContractor._id
     ) {
       throw new ForbiddenException(
         TicketErrors.NO_PERMISSION_TRANSFER_DEPARTMENT,

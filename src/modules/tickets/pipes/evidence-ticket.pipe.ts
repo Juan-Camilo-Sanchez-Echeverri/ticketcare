@@ -21,7 +21,7 @@ export class EvidenceTicketPipe implements PipeTransform {
 
     value = {
       ...value,
-      contractorId: String(ticket.businessContractor._id),
+      contractorId: String(ticket?.businessContractor?._id),
       multimedia: value.multimedia,
     };
 

@@ -80,8 +80,8 @@ export class AssignedTicketPipe implements PipeTransform {
   ): void {
     const departments = assignedUser.details.supportDepartments;
     const levels = assignedUser.details.supportLevels;
-    const department = String(ticket.supportDepartment._id);
-    const levelTicket = String(ticket.supportLevel._id);
+    const department = String(ticket?.supportDepartment?._id);
+    const levelTicket = String(ticket?.supportLevel?._id);
 
     const departmentValid = departments.some(
       ({ _id }) => String(_id) === department,

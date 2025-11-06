@@ -54,7 +54,7 @@ export class OwnTicketGuard implements CanActivate {
     user: UserDocument,
     ticket: TicketDocument,
   ): boolean {
-    const contractorId = ticket.businessContractor._id;
+    const contractorId = ticket?.businessContractor?._id;
     const businessContractors = user.details.businessContractors;
 
     return businessContractors?.some(

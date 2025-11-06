@@ -42,7 +42,7 @@ export class ActivityTicketPipe implements PipeTransform {
 
     value = {
       ...value,
-      contractorId: String(ticket.businessContractor._id),
+      contractorId: String(ticket?.businessContractor?._id),
       status: this.updateStatusTicket(ticket, user),
       user: String(user._id),
       content: {

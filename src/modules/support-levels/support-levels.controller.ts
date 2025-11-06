@@ -9,6 +9,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -30,6 +31,8 @@ import {
   FilterSupportLevelDto,
   UpdateSupportLevelDto,
 } from './dto';
+
+import { OwnLevelGuard } from './guards/own-level.guard';
 
 import { SupportLevelsService } from './support-levels.service';
 
@@ -71,6 +74,7 @@ export class SupportLevelsController {
    */
   @Get(':levelId')
   @AllRoles()
+  @UseGuards(OwnLevelGuard)
   @ApiNotFoundResponseWrapper(SupportLevelsErrors.NOT_FOUND)
   @ApiOkResponseWrapper(SupportLevelResponse, { isArray: false })
   async findOne(

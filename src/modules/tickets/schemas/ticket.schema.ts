@@ -66,14 +66,19 @@ export class Ticket extends BaseSchema {
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'SupportDepartment',
+    default: null,
   })
   supportDepartment: Pick<
     SupportDepartmentDocument,
     '_id' | 'name' | 'supportLevels'
-  >;
+  > | null;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'BusinessClient' })
-  businessClient: Pick<BusinessClientDocument, '_id' | 'name'>;
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'BusinessClient',
+    default: null,
+  })
+  businessClient: Pick<BusinessClientDocument, '_id' | 'name'> | null;
 
   /**
    * Evidence associated with the ticket
@@ -84,11 +89,19 @@ export class Ticket extends BaseSchema {
   @Prop({ type: [ActivitySchema] })
   activity: Activity[];
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'SupportLevel' })
-  supportLevel: Pick<SupportLevelDocument, '_id' | 'name'>;
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SupportLevel',
+    default: null,
+  })
+  supportLevel: Pick<SupportLevelDocument, '_id' | 'name'> | null;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'BusinessContractor' })
-  businessContractor: Pick<BusinessContractorDocument, '_id' | 'name'>;
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'BusinessContractor',
+    default: null,
+  })
+  businessContractor: Pick<BusinessContractorDocument, '_id' | 'name'> | null;
 
   /**
    * Internal priority set by support staff
