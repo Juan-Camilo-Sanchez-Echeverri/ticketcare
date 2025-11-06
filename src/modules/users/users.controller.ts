@@ -11,13 +11,16 @@ import {
   HttpCode,
 } from '@nestjs/common';
 
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import {
+  AllRoles,
+  ApiAuthResponses,
   ApiCreatedResponseWrapper,
   ApiNoContentResponseWrapper,
   ApiNotFoundResponseWrapper,
   ApiOkResponseWrapper,
+  Roles,
 } from '@common/decorators';
 
 import { PaginateResult } from 'mongoose';
@@ -27,9 +30,13 @@ import { CreateUserDto, UpdateUserDto, FilterUsersDto } from './dto';
 import { UsersService } from './users.service';
 
 import { UserDocument } from './schemas/user.schema';
+
 import { UserResponse } from './responses/user.response';
+
 import { UsersErrors } from './errors/users.errors';
 
+@ApiBearerAuth()
+@ApiAuthResponses()
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
@@ -41,6 +48,7 @@ export class UsersController {
    * @remarks this operation creates a new user with the provided data.
    */
   @Post()
+  @Roles('SuperUser', 'Admin')
   @ApiCreatedResponseWrapper(UserResponse)
   async create(@Body() createUserDto: CreateUserDto): Promise<UserDocument> {
     return await this.usersService.create(createUserDto);
@@ -53,6 +61,7 @@ export class UsersController {
    *
    */
   @Get()
+  @AllRoles()
   @ApiOkResponseWrapper(UserResponse, { isArray: true })
   async findAll(
     @Query() filter: FilterUsersDto,
@@ -66,6 +75,7 @@ export class UsersController {
    * @remarks this operation retrieves an user by its id.
    */
   @Get(':id')
+  @Roles('SuperUser', 'Admin')
   @ApiNotFoundResponseWrapper(UsersErrors.NOT_FOUND)
   @ApiOkResponseWrapper(UserResponse, { isArray: false })
   async findOne(@Param('id') id: string): Promise<UserDocument> {
@@ -78,6 +88,7 @@ export class UsersController {
    *  @remarks this operation updates an user by its id with the provided data.
    */
   @Patch(':id')
+  @AllRoles()
   @ApiNotFoundResponseWrapper(UsersErrors.NOT_FOUND)
   @ApiOkResponseWrapper(UserResponse, { isArray: false })
   async update(
@@ -88,12 +99,13 @@ export class UsersController {
   }
 
   /**
-   * Soft-delete a user by id
+   * Delete an user by id
    *
-   * @remarks this operation performs a soft-delete by updating the user's status to DELETED instead of removing the record from the database.
+   * @remarks this operation performs a hard-delete by removing the user's record from the database.
    */
   @Delete(':id')
   @ApiNoContentResponseWrapper()
+  @Roles('SuperUser', 'Admin')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNotFoundResponseWrapper(UsersErrors.NOT_FOUND)
   async remove(@Param('id') id: string): Promise<UserDocument> {

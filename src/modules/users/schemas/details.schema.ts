@@ -36,7 +36,10 @@ export class Details {
     ref: 'BusinessClient',
     default: [],
   })
-  businessClients: Pick<BusinessClientDocument, '_id' | 'name'>[];
+  businessClients: Pick<
+    BusinessClientDocument,
+    '_id' | 'name' | 'businessContractors'
+  >[];
 }
 
 export const DetailsSchema = SchemaFactory.createForClass(Details);

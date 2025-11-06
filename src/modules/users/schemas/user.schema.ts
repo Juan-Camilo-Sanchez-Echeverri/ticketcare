@@ -22,13 +22,13 @@ export class User extends BaseSchema {
   @Prop({ trim: true })
   lastName: string;
 
-  @Prop({ unique: true, trim: true })
+  @Prop({ trim: true })
   email: string;
 
   @Prop({ required: true })
   password: string;
 
-  @Prop({ unique: true, trim: true })
+  @Prop({ trim: true })
   phone: string;
 
   @Prop({ enum: Status, default: Status.ACTIVE, type: String })
