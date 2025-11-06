@@ -59,16 +59,16 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
 
       const parsed = await simpleParser(message.source);
       await this.logEmail(parsed);
+
+      await this.client.messageFlagsAdd(seq, ['\\Seen']);
     }
   }
 
   private async logEmail(email: ParsedMail) {
     const emailFrom = email.from?.value.map((f) => f.address).join(', ');
-    const userName = email.from?.value[0]?.name || 'Usuario';
+    const userName = email.from?.value[0]?.name || 'Usuario Desconocido';
     const subject = email.subject || 'Sin asunto';
-    const text = email.text || 'Sin contenido';
-
-    console.table(email);
+    const text = email.textAsHtml ?? email.text ?? (email.html || '');
 
     email.attachments.forEach((att) => {
       this.logger.log(att);
@@ -109,6 +109,7 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
     const numbers = '0123456789';
 
     let password = '';
+
     password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
     password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
     password += numbers.charAt(Math.floor(Math.random() * numbers.length));
