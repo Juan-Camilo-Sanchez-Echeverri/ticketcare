@@ -1,22 +1,16 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
-import {
-  Allow,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  ValidateNested,
-} from 'class-validator';
-
-import { Type } from 'class-transformer';
+import { Allow, IsNotEmpty, IsOptional } from 'class-validator';
 
 import { TypeContent, StatusTicket } from '../enums';
 
 export class ContentDto {
+  @Allow()
   @ApiHideProperty()
   type?: TypeContent;
 
-  @IsNotEmpty()
+  @Allow()
+  @ApiHideProperty()
   message: string;
 
   @IsOptional()
@@ -24,21 +18,26 @@ export class ContentDto {
 }
 
 export class ActivityDto {
-  @Type(() => ContentDto)
-  @ValidateNested({ each: true })
+  @Allow()
+  @ApiHideProperty()
   content: ContentDto;
 
+  @IsNotEmpty()
+  message: string;
+
+  @Allow()
   @ApiHideProperty()
   user: string;
 
+  @Allow()
   @ApiHideProperty()
-  @IsEnum(StatusTicket)
   status: StatusTicket;
 
   @Allow()
   @ApiProperty({ type: 'array', items: { type: 'file', format: 'binary' } })
   files?: Express.Multer.File[];
 
+  @Allow()
   @ApiHideProperty()
   contractorId: string;
 }

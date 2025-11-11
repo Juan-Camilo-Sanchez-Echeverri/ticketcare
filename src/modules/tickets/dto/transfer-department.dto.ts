@@ -1,6 +1,6 @@
 import { ApiHideProperty } from '@nestjs/swagger';
 
-import { IsMongoId, IsNotEmpty } from 'class-validator';
+import { Allow, IsMongoId, IsNotEmpty } from 'class-validator';
 
 import type { UserDocument } from '@modules/users/schemas';
 
@@ -13,15 +13,19 @@ export class TransferDepartmentDto {
   @IsMongoId()
   supportDepartment: string;
 
+  @Allow()
   @ApiHideProperty()
   requestingUser: UserDocument;
 
+  @Allow()
   @ApiHideProperty()
   departmentInfo: SupportDepartmentDocument;
 
+  @Allow()
   @ApiHideProperty()
   ticket: TicketDocument;
 
+  @Allow()
   @ApiHideProperty()
   unsetAssignedUser: boolean;
 }

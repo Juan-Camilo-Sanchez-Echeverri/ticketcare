@@ -2,12 +2,7 @@ import type { Request } from 'express';
 
 import { REQUEST } from '@nestjs/core';
 
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  PipeTransform,
-} from '@nestjs/common';
+import { Inject, Injectable, PipeTransform } from '@nestjs/common';
 
 import { extractUserFromRequest } from '@common/helpers';
 
@@ -36,10 +31,6 @@ export class ActivityTicketPipe implements PipeTransform {
 
     const files = this.request.files as Express.Multer.File[];
 
-    if (!value?.content?.message) {
-      throw new BadRequestException('content.message is required');
-    }
-
     value = {
       ...value,
       contractorId: String(ticket?.businessContractor?._id),
@@ -47,7 +38,7 @@ export class ActivityTicketPipe implements PipeTransform {
       user: String(user._id),
       content: {
         ...value.content,
-        message: value.content.message,
+        message: value.message,
         type: this.getType(files, value),
       },
     };

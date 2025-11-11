@@ -22,6 +22,8 @@ export class TicketActivityEventInterceptor implements NestInterceptor {
     return next.handle().pipe(
       mergeMap(async (ticket: TicketDocument) => {
         await this.emitActivityEvents(ticket);
+
+        return ticket;
       }),
     );
   }

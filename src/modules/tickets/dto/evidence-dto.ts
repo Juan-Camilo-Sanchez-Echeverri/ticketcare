@@ -30,9 +30,11 @@ export class EvidenceDto {
   @ApiProperty({ type: 'array', items: { type: 'string', format: 'binary' } })
   readonly files?: string[];
 
+  @Allow()
   @ApiHideProperty()
   contractorId?: string;
 
+  @Allow()
   @ApiHideProperty()
   multimedia?: MediaEvidenceDto[];
 }
