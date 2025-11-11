@@ -14,11 +14,9 @@ import {
 
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 
-import { FILE_EXTENSIONS } from '@common/constants';
+import { FILE_MIME_TYPES } from '@common/constants';
 
 import { UploadInterceptor } from '@common/interceptors/upload.interceptor';
-
-import { FilesValidationPipe } from '@common/pipes';
 
 import {
   AllRoles,
@@ -72,20 +70,19 @@ export class TicketsFilesController {
     fieldName: 'files',
     maxCount: 10,
     maxSizeMB: 50,
-    allowedMimeTypes: FILE_EXTENSIONS,
+    allowedMimeTypes: FILE_MIME_TYPES,
   })
   @ApiOkResponseWrapper(TicketResponse, { isArray: false })
   async addEvidence(
     @Body(EvidenceTicketPipe) evidenceDto: EvidenceDto,
     @Param('ticketId') ticketId: string,
-    @UploadedFiles(FilesValidationPipe)
-    files?: Array<Express.Multer.File>,
+    @UploadedFiles() files?: Array<Express.Multer.File>,
   ): Promise<TicketDocument> {
     const { multimedia = [] } = evidenceDto;
 
     await Promise.all(
       (files ?? []).map(async (file) => {
-        const folder = `${evidenceDto.contractorId}/tickets/${ticketId}/evidence`;
+        const folder = `uploads/${evidenceDto.contractorId}/tickets/${ticketId}/evidence`;
 
         const fileUrl = await this.storageService.saveFile(
           file,
@@ -117,18 +114,23 @@ export class TicketsFilesController {
   @ApiConsumes('multipart/form-data')
   @ApiOkResponseWrapper(TicketResponse, { isArray: false })
   @UseInterceptors(TicketActivityEventInterceptor)
-  @UploadInterceptor({ type: 'multiple', fieldName: 'files' })
+  @UploadInterceptor({
+    type: 'multiple',
+    fieldName: 'files',
+    maxCount: 10,
+    maxSizeMB: 50,
+    allowedMimeTypes: FILE_MIME_TYPES,
+  })
   async addActivity(
     @Param('ticketId') ticketId: string,
     @Body(ActivityTicketPipe) activityDto: ActivityDto,
-    @UploadedFiles(FilesValidationPipe)
-    files?: Array<Express.Multer.File>,
+    @UploadedFiles() files?: Array<Express.Multer.File>,
   ): Promise<TicketDocument> {
     if (files && files.length > 0) {
       activityDto.content.urls = [];
 
       for (const file of files) {
-        const folder = `${activityDto.contractorId}/tickets/${ticketId}/activity`;
+        const folder = `uploads/${activityDto.contractorId}/tickets/${ticketId}/activity`;
 
         const fileUrl = await this.storageService.saveFile(
           file,
@@ -156,18 +158,24 @@ export class TicketsFilesController {
   @ApiConsumes('multipart/form-data')
   @UseGuards(OwnTicketGuard, OwnActivityTicketGuard)
   @ApiOkResponseWrapper(TicketResponse, { isArray: false })
-  @UploadInterceptor({ type: 'multiple', fieldName: 'files' })
+  @UploadInterceptor({
+    type: 'multiple',
+    fieldName: 'files',
+    maxCount: 10,
+    maxSizeMB: 50,
+    allowedMimeTypes: FILE_MIME_TYPES,
+  })
   async updateActivity(
     @Param('ticketId') ticketId: string,
     @Param('activityId') activityId: string,
-    @UploadedFiles(FilesValidationPipe) files: Array<Express.Multer.File>,
     @Body(ActivityTicketPipe) activityDto: ActivityDto,
+    @UploadedFiles() files?: Array<Express.Multer.File>,
   ): Promise<TicketDocument> {
     if (files && files.length > 0) {
       activityDto.content.urls = activityDto.content.urls || [];
 
       for (const file of files) {
-        const folder = `${activityDto.contractorId}/tickets/${ticketId}/activity`;
+        const folder = `uploads/${activityDto.contractorId}/tickets/${ticketId}/activity`;
 
         const fileUrl = await this.storageService.saveFile(
           file,
@@ -192,37 +200,6 @@ export class TicketsFilesController {
   }
 
   /**
-   * Delete a file from an activity in a ticket
-   *
-   * @remarks
-   * This endpoint allows users to delete a specific file associated with an activity in a ticket.
-   *
-   * Allows all roles to access this endpoint, with ownership verification via the OwnTicketGuard and OwnActivityTicketGuard.
-   */
-  @Delete(':ticketId/activity/:activityId/delete-file')
-  @AllRoles()
-  @ApiNoContentResponseWrapper()
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(OwnTicketGuard, OwnActivityTicketGuard)
-  async deleteFileFromActivity(
-    @Param('ticketId') ticketId: string,
-    @Param('activityId') activityId: string,
-    @Body('fileUrl') fileUrl: string,
-  ): Promise<TicketDocument> {
-    const updateQuery = { $pull: { 'activity.$.content.urls': fileUrl } };
-
-    const updatedTicket = await this.ticketsService.updateActivity(
-      ticketId,
-      activityId,
-      updateQuery,
-    );
-
-    await this.storageService.deleteFile(fileUrl, 'local');
-
-    return updatedTicket;
-  }
-
-  /**
    * Delete an activity from a ticket
    *
    * @remarks
@@ -244,7 +221,7 @@ export class TicketsFilesController {
       activityId,
     );
 
-    if (activity['_id'].toString() === activityId) {
+    if (String(activity._id) === activityId) {
       const urls = activity?.content?.urls;
       if (Array.isArray(urls)) {
         await Promise.all(
