@@ -16,9 +16,7 @@ export class FilterTicketsUnassignedPipe implements PipeTransform {
   transform(value: FilterTicketDto) {
     const user = extractUserFromRequest(this.request);
 
-    value.data = {
-      assignedUser: { $exists: false },
-    };
+    value.data.assignedUser = null;
 
     if (user.role === UserRole.Agent) {
       value.data = {

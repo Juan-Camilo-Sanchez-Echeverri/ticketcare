@@ -36,6 +36,8 @@ export class ValidationTicketPipe implements PipeTransform {
       throw new BadRequestException('Department not found for this contractor');
     }
 
+    this.departmentsService.checkStatus(department);
+
     const supportLevel = String(department.defaultLevel._id);
 
     value = {

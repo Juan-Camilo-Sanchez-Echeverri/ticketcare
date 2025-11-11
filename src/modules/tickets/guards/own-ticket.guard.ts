@@ -58,7 +58,7 @@ export class OwnTicketGuard implements CanActivate {
     const businessContractors = user.details.businessContractors;
 
     return businessContractors?.some(
-      (contractor) => contractor._id === contractorId,
+      (contractor) => String(contractor._id) === String(contractorId),
     );
   }
 
@@ -68,19 +68,18 @@ export class OwnTicketGuard implements CanActivate {
   ): boolean {
     const requestingUser = ticket.requestingUser;
 
-    return user._id === requestingUser._id;
+    return String(user._id) === String(requestingUser._id);
   }
 
   validateTicketAssignment(user: UserDocument, ticket: TicketDocument): void {
     const rolePermission = user.role === UserRole.Agent;
     const ticketAssigned = Boolean(ticket.assignedUser?._id);
-    const isMeTicket = ticket?.assignedUser?._id === user._id;
+
+    const isMeTicket = String(ticket?.assignedUser?._id) === String(user._id);
 
     const unauthorizedAssignment =
       ticketAssigned && !isMeTicket && rolePermission;
 
-    if (unauthorizedAssignment) {
-      throw new ForbiddenException();
-    }
+    if (unauthorizedAssignment) throw new ForbiddenException();
   }
 }

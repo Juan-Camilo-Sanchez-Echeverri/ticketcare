@@ -11,7 +11,7 @@ export const messageAssignTicket = (
 
   const department = ticket?.supportDepartment?.name;
 
-  return `${firstName} ${lastName} del departamento ${department} ha tomado el ticket.`;
+  return `${firstName} ${lastName} ${department ? `del departamento ${department}` : ''} ha tomado el ticket.`;
 };
 
 export const messageTransferAgent = (

@@ -49,7 +49,16 @@ export class TicketsService {
       select: 'name lastName phone email',
       match: this.match,
     },
-    { path: 'supportDepartment', match: this.match },
+    {
+      path: 'supportDepartment',
+      match: this.match,
+      select: 'name supportLevels',
+      populate: {
+        path: 'supportLevels',
+        select: 'name',
+        match: this.match,
+      },
+    },
     { path: 'businessClient', select: 'name', match: this.match },
     { path: 'supportLevel', select: 'name', match: this.match },
     { path: 'businessContractor', select: 'name', match: this.match },
@@ -242,7 +251,7 @@ export class TicketsService {
 
     const message = isReassigned
       ? messageTransferAgent(requestingUser, assignedUserInfo, ticket)
-      : messageAssignTicket(requestingUser, ticket);
+      : messageAssignTicket(assignedUserInfo, ticket);
 
     const updateQuery = {
       $set: {

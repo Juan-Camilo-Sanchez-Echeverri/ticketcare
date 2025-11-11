@@ -11,6 +11,8 @@ import {
 
 import { extractUserFromRequest } from '@common/helpers';
 
+import { UserRole } from '@common/enums';
+
 import { UserDocument } from '@modules/users/schemas';
 import { UsersService } from '@modules/users/users.service';
 
@@ -35,11 +37,14 @@ export class AssignedTicketPipe implements PipeTransform {
     const ticketId = this.request.params.ticketId;
 
     const requestingUser = extractUserFromRequest(this.request);
+
     const assignedUserInfo = await this.usersService.findOneById(assignedUser);
 
     const ticket = await this.ticketsService.findOneById(ticketId);
 
-    this.validateUsers(requestingUser, assignedUserInfo, ticket);
+    if (requestingUser.role !== UserRole.SuperUser) {
+      this.validateUsers(requestingUser, assignedUserInfo, ticket);
+    }
 
     value.requestingUser = requestingUser;
     value.assignedUserInfo = assignedUserInfo;

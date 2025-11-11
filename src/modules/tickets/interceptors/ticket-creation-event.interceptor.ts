@@ -29,15 +29,26 @@ export class TicketCreationEventInterceptor implements NestInterceptor {
           ticket,
         });
 
-        const agentsContractors = await this.usersService.findByQuery({
+        const query: Record<string, unknown> = {
           role: UserRole.Agent,
           status: Status.ACTIVE,
-          'details.supportDepartments': {
-            $in: [ticket?.supportDepartment?._id],
-          },
-          'details.supportLevels': { $in: [ticket?.supportLevel?._id] },
-          'details.businessContractors': ticket?.businessContractor?._id,
-        });
+        };
+
+        if (ticket?.supportDepartment?._id) {
+          query['details.supportDepartments'] = {
+            $in: [ticket.supportDepartment._id],
+          };
+        }
+
+        if (ticket?.supportLevel?._id) {
+          query['details.supportLevels'] = { $in: [ticket.supportLevel._id] };
+        }
+
+        if (ticket?.businessContractor?._id) {
+          query['details.businessContractors'] = ticket.businessContractor._id;
+        }
+
+        const agentsContractors = await this.usersService.findByQuery(query);
 
         await Promise.all(
           agentsContractors.map((agent) =>
