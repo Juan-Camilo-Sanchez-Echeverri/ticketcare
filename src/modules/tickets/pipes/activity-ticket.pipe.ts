@@ -49,11 +49,13 @@ export class ActivityTicketPipe implements PipeTransform {
   private updateStatusTicket(ticket: TicketDocument, user: UserDocument) {
     let status: StatusTicket = ticket.status;
 
-    const isMeRequestTicket = ticket.requestingUser._id === user.id;
+    const isMeRequestTicket =
+      String(ticket.requestingUser._id) === String(user._id);
 
     if (isMeRequestTicket) status = StatusTicket.CLIENT_RESPONSE;
 
-    const isTicketAssigned = ticket.assignedUser?._id === user._id;
+    const isTicketAssigned =
+      String(ticket.assignedUser?._id) === String(user._id);
 
     if (isTicketAssigned) status = StatusTicket.PENDING_RESPONSE;
 

@@ -30,6 +30,7 @@ import { SupportLevelsModule } from '@modules/support-levels/support-levels.modu
 import { TicketsModule } from '@modules/tickets/tickets.module';
 import { UsersModule } from '@modules/users/users.module';
 import { EmailModule } from '@modules/email/email.module';
+import { WhatsAppModule } from '@modules/whatsApp/whatsApp.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { EmailModule } from '@modules/email/email.module';
     SupportLevelsModule,
     TicketsModule,
     EmailModule,
+    WhatsAppModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

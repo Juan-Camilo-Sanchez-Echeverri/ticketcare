@@ -62,7 +62,7 @@ export class TicketStatusEventInterceptor implements NestInterceptor {
       return;
     }
 
-    if (user._id !== ticket.assignedUser._id) {
+    if (String(user._id) !== String(ticket.assignedUser._id)) {
       await this.eventEmitter.emitAsync(TicketEvents.AgentsManagement, {
         ticket,
         user: ticket.assignedUser,

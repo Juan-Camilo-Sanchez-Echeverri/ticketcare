@@ -40,12 +40,14 @@ export class OwnLevelGuard implements CanActivate {
     user: UserDocument,
     level: SupportLevelDocument,
   ): boolean {
-    const contractorId = level.businessContractor._id;
+    const contractorId = String(level.businessContractor._id);
     const businessClients = user.details.businessClients;
 
     const hasAccess = businessClients?.some((client) => {
       const contractors = client.businessContractors;
-      return contractors.some((contractor) => contractor._id === contractorId);
+      return contractors.some(
+        (contractor) => String(contractor._id) === contractorId,
+      );
     });
 
     return hasAccess;
@@ -55,9 +57,11 @@ export class OwnLevelGuard implements CanActivate {
     user: UserDocument,
     level: SupportLevelDocument,
   ): boolean {
-    const contractorLevelId = level.businessContractor._id;
+    const contractorLevelId = String(level.businessContractor._id);
 
-    const contractorIds = user.details.businessContractors?.map((bc) => bc._id);
+    const contractorIds = user.details.businessContractors?.map((bc) =>
+      String(bc._id),
+    );
 
     return contractorIds?.includes(contractorLevelId);
   }

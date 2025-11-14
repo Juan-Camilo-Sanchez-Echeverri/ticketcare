@@ -3,7 +3,3 @@ export enum TicketEvents {
   CreateTicket = 'ticket.createTicket',
   AgentsManagement = 'ticket.agentsManagement',
 }
-
-export enum AuthEvents {
-  SendCodeLogin = 'auth.sendCodeLogin',
-}

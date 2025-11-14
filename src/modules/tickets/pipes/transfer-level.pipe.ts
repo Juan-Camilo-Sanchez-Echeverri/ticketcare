@@ -70,7 +70,7 @@ export class TransferLevelPipe implements PipeTransform {
       (level) => String(level._id) === supportLevel,
     );
 
-    const isMeTicket = ticket?.assignedUser?._id === user._id;
+    const isMeTicket = String(ticket?.assignedUser?._id) === String(user._id);
 
     if (isLevel && isMeTicket) {
       value.unsetAssignedUser = false;
@@ -86,7 +86,10 @@ export class TransferLevelPipe implements PipeTransform {
     ticket: TicketDocument,
     levelInfo: SupportLevelDocument,
   ) {
-    if (ticket.businessContractor?._id !== levelInfo.businessContractor._id) {
+    const contractorTicketId = String(ticket.businessContractor?._id);
+    const contractorLevelId = String(levelInfo.businessContractor._id);
+
+    if (contractorTicketId !== contractorLevelId) {
       throw new BadRequestException(TicketErrors.NO_PERMISSION_TRANSFER_LEVEL);
     }
 

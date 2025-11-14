@@ -194,7 +194,7 @@ export class TicketsService {
           },
         },
       },
-      ...(unsetAssignedUser ? { $unset: { assignedUser: '' } } : {}),
+      ...(unsetAssignedUser ? { assignedUser: null } : {}),
     };
 
     const ticketUpdate = await this.repository.findByIdAndUpdate(
@@ -218,7 +218,7 @@ export class TicketsService {
         supportLevel: levelInfo._id,
         status: StatusTicket.CHANGE_LEVEL,
       },
-      ...(unsetAssignedUser ? { $unset: { assignedUser: '' } } : {}),
+      ...(unsetAssignedUser ? { assignedUser: null } : {}),
     };
 
     const ticketUpdate = await this.repository.findByIdAndUpdate(
@@ -325,7 +325,7 @@ export class TicketsService {
   ): Promise<Activity> {
     const activity = await this.getActivityById(ticketId, activityId);
 
-    if (activity['_id'].toString() === activityId) {
+    if (String(activity['_id']) === activityId) {
       const createdAt = new Date(activity['createdAt']);
       validateHourDifference(createdAt);
     }

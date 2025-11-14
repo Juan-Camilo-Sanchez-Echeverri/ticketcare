@@ -40,7 +40,7 @@ export class OwnUserGuard implements CanActivate {
   private isClient(currentUser: UserDocument, targetUser: UserDocument) {
     return currentUser.details.businessClients?.some((clientInCurrentUser) =>
       targetUser.details.businessClients.map(
-        (client) => client._id === clientInCurrentUser._id,
+        (client) => String(client._id) === String(clientInCurrentUser._id),
       ),
     );
   }
@@ -50,25 +50,25 @@ export class OwnUserGuard implements CanActivate {
     targetUser: UserDocument,
   ) {
     const currentUserContractorIds =
-      currentUser.details.businessContractors.map(
-        (contractor) => contractor._id,
+      currentUser.details.businessContractors.map((contractor) =>
+        String(contractor._id),
       );
 
     return targetUser.details.businessClients?.some((client) =>
       client.businessContractors.some((contractor) =>
-        currentUserContractorIds.includes(contractor._id),
+        currentUserContractorIds.includes(String(contractor._id)),
       ),
     );
   }
 
   private isContractor(currentUser: UserDocument, targetUser: UserDocument) {
     const currentUserContractorsIds =
-      currentUser.details.businessContractors.map(
-        (contractor) => contractor._id,
+      currentUser.details.businessContractors.map((contractor) =>
+        String(contractor._id),
       );
 
     return targetUser.details.businessContractors?.some((contractor) =>
-      currentUserContractorsIds.includes(contractor._id),
+      currentUserContractorsIds.includes(String(contractor._id)),
     );
   }
 }

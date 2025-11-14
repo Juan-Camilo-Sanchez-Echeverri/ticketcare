@@ -36,6 +36,11 @@ interface EnvVars {
 
   IMAP_USER: string;
   IMAP_PASSWORD: string;
+
+  META_API_VERSION: string;
+  META_PHONE_NUMBER_ID: string;
+  META_ACCESS_TOKEN: string;
+  META_BASE_URL: string;
 }
 
 const envSchema = joi
@@ -65,6 +70,11 @@ const envSchema = joi
 
     IMAP_USER: joi.string().required(),
     IMAP_PASSWORD: joi.string().required(),
+
+    META_API_VERSION: joi.string().required(),
+    META_PHONE_NUMBER_ID: joi.string().required(),
+    META_ACCESS_TOKEN: joi.string().required(),
+    META_BASE_URL: joi.string().uri().required(),
   })
   .unknown(true);
 
@@ -98,4 +108,9 @@ export const envs = {
 
   imapUser: envVars.IMAP_USER,
   imapPassword: envVars.IMAP_PASSWORD,
+
+  metaApiVersion: envVars.META_API_VERSION,
+  metaPhoneNumberId: envVars.META_PHONE_NUMBER_ID,
+  metaAccessToken: envVars.META_ACCESS_TOKEN,
+  metaBaseUrl: envVars.META_BASE_URL,
 };

@@ -71,7 +71,7 @@ export class TransferDepartmentPipe implements PipeTransform {
     const isDepartment = user.details.supportDepartments.some(
       (department) => String(department._id) === value.supportDepartment,
     );
-    const isMeTicket = ticket?.assignedUser?._id === user._id;
+    const isMeTicket = String(ticket?.assignedUser?._id) === String(user._id);
 
     if (isDepartment && isMeTicket) {
       value.unsetAssignedUser = false;
@@ -89,7 +89,8 @@ export class TransferDepartmentPipe implements PipeTransform {
     departmentInfo: SupportDepartmentDocument,
   ) {
     if (
-      ticket?.businessContractor?._id !== departmentInfo.businessContractor._id
+      String(ticket?.businessContractor?._id) !==
+      String(departmentInfo.businessContractor._id)
     ) {
       throw new ForbiddenException(
         TicketErrors.NO_PERMISSION_TRANSFER_DEPARTMENT,
