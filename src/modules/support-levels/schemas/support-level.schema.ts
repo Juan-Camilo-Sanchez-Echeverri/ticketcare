@@ -1,12 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 
 import { BaseSchema } from '@common/database';
 
 import { Status } from '@common/enums';
-
-import type { BusinessContractorDocument } from '@modules/business-contractors/schemas/business-contractor.schema';
 
 @Schema({
   timestamps: true,
@@ -23,9 +21,6 @@ export class SupportLevel extends BaseSchema {
 
   @Prop({ required: true, enum: Status, default: Status.ACTIVE })
   status: Status;
-
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'BusinessContractor' })
-  businessContractor: Pick<BusinessContractorDocument, '_id' | 'name'>;
 }
 
 export type SupportLevelDocument = HydratedDocument<SupportLevel>;

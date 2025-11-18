@@ -37,10 +37,4 @@ export class CreateSupportDepartmentDto {
    */
   @IsMongoId()
   defaultLevel: string;
-
-  /**
-   * Business contractor id associated with the support department.
-   */
-  @IsMongoId()
-  businessContractor: string;
 }

@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsMongoId, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 import { IsNotBlank } from '@common/decorators';
 
@@ -15,7 +15,4 @@ export class CreateSupportLevelDto {
   @IsOptional()
   @IsEnum(Status)
   status?: Status;
-
-  @IsMongoId()
-  businessContractor: string;
 }

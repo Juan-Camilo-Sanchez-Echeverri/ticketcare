@@ -86,13 +86,6 @@ export class TransferLevelPipe implements PipeTransform {
     ticket: TicketDocument,
     levelInfo: SupportLevelDocument,
   ) {
-    const contractorTicketId = String(ticket.businessContractor?._id);
-    const contractorLevelId = String(levelInfo.businessContractor._id);
-
-    if (contractorTicketId !== contractorLevelId) {
-      throw new BadRequestException(TicketErrors.NO_PERMISSION_TRANSFER_LEVEL);
-    }
-
     const departmentTicket = ticket.supportDepartment;
 
     const isDepartment = departmentTicket?.supportLevels.some(

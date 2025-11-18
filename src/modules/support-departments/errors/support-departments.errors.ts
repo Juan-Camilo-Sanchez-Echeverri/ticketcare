@@ -8,7 +8,7 @@ export const SupportDepartmentsErrors = {
   DELETE: {
     message: 'Support department eliminated',
   },
-  LEVEL_MISMATCH: {
-    message: 'Support level does not belong to the selected business',
+  LEVEL_NOT_FOUND: {
+    message: 'The support level does not exist.',
   },
 };

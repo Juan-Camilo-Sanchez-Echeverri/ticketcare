@@ -4,7 +4,6 @@ import { REQUEST } from '@nestjs/core';
 
 import {
   BadRequestException,
-  ForbiddenException,
   Inject,
   Injectable,
   PipeTransform,
@@ -48,8 +47,6 @@ export class TransferDepartmentPipe implements PipeTransform {
 
     const user = extractUserFromRequest(this.request);
 
-    this.checkDepartmentTransferPermission(ticket, departmentInfo);
-
     if (user.role === UserRole.Agent) {
       this.handleAgentTransfer(ticket, user, value, departmentInfo);
     } else {
@@ -82,19 +79,5 @@ export class TransferDepartmentPipe implements PipeTransform {
     value.requestingUser = user;
     value.departmentInfo = departmentInfo;
     value.ticket = ticket;
-  }
-
-  private checkDepartmentTransferPermission(
-    ticket: TicketDocument,
-    departmentInfo: SupportDepartmentDocument,
-  ) {
-    if (
-      String(ticket?.businessContractor?._id) !==
-      String(departmentInfo.businessContractor._id)
-    ) {
-      throw new ForbiddenException(
-        TicketErrors.NO_PERMISSION_TRANSFER_DEPARTMENT,
-      );
-    }
   }
 }

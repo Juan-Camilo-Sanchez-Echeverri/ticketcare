@@ -21,7 +21,6 @@ export class SupportDepartmentsService {
   private readonly match = { status: Status.ACTIVE };
 
   private readonly pathsPopulate: PopulateOptions[] = [
-    { path: 'businessContractor', match: this.match, select: 'name' },
     { path: 'supportLevels', match: this.match, select: 'name' },
     { path: 'defaultLevel', match: this.match, select: 'name' },
   ];

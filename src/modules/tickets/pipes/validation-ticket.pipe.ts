@@ -2,12 +2,7 @@ import type { Request } from 'express';
 
 import { REQUEST } from '@nestjs/core';
 
-import {
-  Injectable,
-  PipeTransform,
-  Inject,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, PipeTransform, Inject } from '@nestjs/common';
 
 import { extractUserFromRequest } from '@common/helpers';
 
@@ -27,14 +22,9 @@ export class ValidationTicketPipe implements PipeTransform {
 
     const requestingUser = extractUserFromRequest(this.request);
 
-    const department = await this.departmentsService.findOneByQuery({
-      _id: supportDepartment,
-      businessContractor: businessContractor!,
-    });
-
-    if (!department) {
-      throw new BadRequestException('Department not found for this contractor');
-    }
+    const department = await this.departmentsService.findOneById(
+      supportDepartment!,
+    );
 
     this.departmentsService.checkStatus(department);
 

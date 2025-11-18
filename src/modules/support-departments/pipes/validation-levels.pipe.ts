@@ -15,36 +15,29 @@ export class ValidationLevelsPipe implements PipeTransform {
   async transform(
     value: CreateSupportDepartmentDto,
   ): Promise<CreateSupportDepartmentDto> {
-    const { supportLevels, businessContractor } = value;
+    const { supportLevels } = value;
 
-    await this.validateSupportLevels(supportLevels, businessContractor);
+    await this.validateSupportLevels(supportLevels);
 
     return value;
   }
 
-  private async validateSupportLevels(
-    supportLevels: string[],
-    businessContractor: string,
-  ): Promise<void> {
+  private async validateSupportLevels(supportLevels: string[]): Promise<void> {
     const validationPromises = supportLevels.map((level) =>
-      this.validateSupportLevel(level, businessContractor),
+      this.validateSupportLevel(level),
     );
 
     await Promise.all(validationPromises);
   }
 
-  private async validateSupportLevel(
-    level: string,
-    businessContractor: string,
-  ): Promise<void> {
+  private async validateSupportLevel(level: string): Promise<void> {
     const supportLevel = await this.supportLevelService.findOneByQuery({
       _id: level,
       status: Status.ACTIVE,
-      businessContractor,
     });
 
     if (!supportLevel) {
-      throw new BadRequestException(SupportDepartmentsErrors.LEVEL_MISMATCH);
+      throw new BadRequestException(SupportDepartmentsErrors.LEVEL_NOT_FOUND);
     }
   }
 }
