@@ -13,7 +13,7 @@ import { Status } from '@common/enums';
   strictQuery: 'throw',
 })
 export class SupportLevel extends BaseSchema {
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   name: string;
 
   @Prop()
