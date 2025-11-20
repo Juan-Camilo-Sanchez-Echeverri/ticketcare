@@ -22,6 +22,7 @@ import {
 } from '@common/decorators';
 
 import { UserResponse } from '@modules/users/responses/user.response';
+import type { UserDocument } from '@modules/users/schemas';
 
 import { LoginAuthDto, RecoverPasswordDto, ResetPasswordDto } from './dto';
 
@@ -108,5 +109,9 @@ export class AuthController {
   @ApiBearerAuth()
   getMe(@CurrentUser() user: UserResponse): UserResponse {
     return user;
+  }
+
+  async logout(@CurrentUser() user: UserDocument): Promise<void> {
+    return this.authService.logout(user);
   }
 }

@@ -25,7 +25,7 @@ export class Evidence {
   /**
    * Multimedia files associated with the evidence
    */
-  @Prop({ type: [MediaEvidenceDto] })
+  @Prop({ type: [MediaEvidenceDto], default: [] })
   multimedia: MediaEvidenceDto[];
 }
 

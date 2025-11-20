@@ -83,7 +83,7 @@ export class Ticket extends BaseSchema {
   /**
    * Evidence associated with the ticket
    */
-  @Prop({ type: EvidenceSchema, _id: false })
+  @Prop({ type: EvidenceSchema, _id: false, default: () => ({}) })
   evidence: Evidence;
 
   @Prop({ type: [ActivitySchema] })

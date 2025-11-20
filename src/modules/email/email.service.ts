@@ -1,26 +1,36 @@
+import { randomUUID } from 'node:crypto';
+
 import {
   Injectable,
-  OnModuleInit,
   Logger,
   OnModuleDestroy,
+  OnModuleInit,
 } from '@nestjs/common';
 
-import { ImapFlow, ExistsEvent } from 'imapflow';
+import { ImapFlow } from 'imapflow';
 
-import { simpleParser, ParsedMail } from 'mailparser';
+import { ParsedMail, simpleParser } from 'mailparser';
 
 import { imapConfig } from '@configs';
 
-import { UsersService } from '@modules/users/users.service';
+import { UserRole } from '@common/enums';
+
+import { NotificationType } from '@modules/notifications/enums/notification-type.enum';
+import { NotificationsService } from '@modules/notifications/notifications.service';
+import { ticketFollowupEmail } from '@modules/notifications/templates/email';
+import { StorageService } from '@modules/storage/storage.service';
+import { TicketSource } from '@modules/tickets/enums';
 import { TicketsService } from '@modules/tickets/tickets.service';
-import { UserRole } from '../../common/enums';
-import { TicketSource } from '../tickets/enums';
+import { UsersService } from '@modules/users/users.service';
+import { generateRandomPassword } from '@common/helpers';
 
 @Injectable()
 export class EmailService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly ticketsService: TicketsService,
     private readonly usersService: UsersService,
+    private readonly storageService: StorageService,
+    private readonly notificationsService: NotificationsService,
   ) {}
   private readonly logger = new Logger(EmailService.name);
   private client!: ImapFlow;
@@ -34,8 +44,7 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
 
       await this.client.mailboxOpen('INBOX');
 
-      this.client.on('exists', (event: ExistsEvent) => {
-        this.logger.log({ event });
+      this.client.on('exists', () => {
         void this.handleNewEmails();
       });
     } catch (err) {
@@ -50,7 +59,7 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
 
     for (const seq of searchResults) {
       const message = await this.client.fetchOne(seq, {
-        // envelope: true,
+        envelope: true,
         source: true,
         flags: true,
       });
@@ -58,14 +67,16 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
       if (!message || !message.source) continue;
 
       const parsed = await simpleParser(message.source);
-      await this.logEmail(parsed);
+      await this.processEmailTicket(parsed);
 
       await this.client.messageFlagsAdd(seq, ['\\Seen']);
     }
   }
 
-  private async logEmail(email: ParsedMail) {
+  private async processEmailTicket(email: ParsedMail) {
     const emailFrom = email.from?.value.map((f) => f.address).join(', ');
+    if (!emailFrom) return;
+
     const userName = email.from?.value[0]?.name || 'Usuario Desconocido';
     const subject = email.subject || 'Sin asunto';
     const text = email.textAsHtml ?? email.text ?? (email.html || '');
@@ -75,19 +86,23 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
     });
 
     let user = await this.usersService.findOneByQuery({ email: emailFrom });
+    let newPassword = '';
 
     if (!user) {
+      newPassword = generateRandomPassword();
       user = await this.usersService.create({
         name: userName,
-        email: emailFrom || '<desconocido>',
+        email: emailFrom,
         lastName: '',
-        password: this.generateRandomPassword(),
+        password: newPassword,
         role: UserRole.Client,
         modifiedBy: null,
       });
+
+      await this.sendReplyNotification(user.email, newPassword);
     }
 
-    await this.ticketsService.create({
+    const ticket = await this.ticketsService.create({
       title: subject,
       description: text,
       requestingUser: String(user._id),
@@ -96,6 +111,27 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
       businessContractor: null,
       source: TicketSource.EMAIL,
     });
+
+    const multimedia = [];
+
+    for (const att of email.attachments) {
+      const nameFile = att.filename?.replace(/[^\w.-]/g, '_') || randomUUID();
+
+      const folder = `uploads/${String(user._id)}/tickets/${String(ticket._id)}/evidence/${nameFile}`;
+
+      const fileUrl = await this.storageService.saveFile(
+        att.content,
+        folder,
+        'local',
+      );
+
+      multimedia.push({ nameFile, url: fileUrl });
+    }
+
+    if (multimedia.length > 0) {
+      ticket.evidence.multimedia.push(...multimedia);
+      await ticket.save();
+    }
   }
 
   async onModuleDestroy() {
@@ -103,25 +139,14 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('IMAP desconectado');
   }
 
-  private generateRandomPassword(): string {
-    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-    const numbers = '0123456789';
+  private async sendReplyNotification(userEmail: string, password: string) {
+    const htmlContent = ticketFollowupEmail(userEmail, password);
+    const payload = {
+      to: userEmail,
+      subject: 'Seguimiento de Ticket en nuestra plataforma',
+      html: htmlContent,
+    };
 
-    let password = '';
-
-    password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
-    password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
-    password += numbers.charAt(Math.floor(Math.random() * numbers.length));
-
-    const allChars = uppercase + lowercase + numbers;
-    for (let i = 0; i < 4; i++) {
-      password += allChars.charAt(Math.floor(Math.random() * allChars.length));
-    }
-
-    return password
-      .split('')
-      .sort(() => 0.5 - Math.random())
-      .join('');
+    await this.notificationsService.send(NotificationType.EMAIL, payload);
   }
 }

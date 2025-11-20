@@ -49,7 +49,7 @@ export class AuthService {
     });
 
     user.online = true;
-    await user.save();
+    if (user.isModified()) await user.save();
 
     return { accessToken };
   }
@@ -86,6 +86,14 @@ export class AuthService {
     });
 
     return { changed: true };
+  }
+
+  async logout(user: UserDocument) {
+    const userDoc = await this.usersService.findOneById(String(user._id));
+
+    userDoc.online = false;
+
+    if (userDoc.isModified()) await userDoc.save();
   }
 
   private validateUser(user: UserDocument) {
