@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
@@ -26,19 +26,18 @@ export class TicketsListController {
 
   /**
    *
-   * Get all unassigned tickets for a specific contractor.
+   * Get all unassigned tickets
    *
    * @remarks
    *
-   * Retrieves a paginated list of unassigned tickets associated with the given contractor ID.
+   * Retrieves a paginated list of unassigned tickets associated.
    *
    * Allows only users with roles <b>Admin</b>, <b>Coordinator</b>, and <b>Agent</b> to access this endpoint.
    */
-  @Get('unassigned-tickets/:contractorId')
+  @Get('unassigned-tickets')
   @Roles('Admin', 'Coordinator', 'Agent')
   @ApiOkResponseWrapper(TicketResponse, { isArray: true })
   async findAllByContractorId(
-    @Param('contractorId') _contractorId: string,
     @Query(FilterTicketsUnassignedPipe)
     query: FilterTicketDto,
   ) {
@@ -55,11 +54,10 @@ export class TicketsListController {
    *
    * Allows only users with the role <b>Agent</b> to access this endpoint.
    */
-  @Get('assigned-tickets/:contractorId')
+  @Get('assigned-tickets')
   @Roles('Agent')
   @ApiOkResponseWrapper(TicketResponse, { isArray: true })
   async getMeTicketsAssigned(
-    @Param('contractorId') _contractorId: string,
     @Query() query: FilterTicketDto,
     @CurrentUser('_id') userId: string,
   ) {
@@ -77,11 +75,10 @@ export class TicketsListController {
    *
    * Allows only users with the role <b>Client</b> to access this endpoint.
    */
-  @Get('my-tickets/:contractorId')
+  @Get('my-tickets')
   @Roles('Client')
   @ApiOkResponseWrapper(TicketResponse, { isArray: true })
   async getMyTickets(
-    @Param('contractorId') _contractorId: string,
     @Query() query: FilterTicketDto,
     @CurrentUser('_id') userId: string,
   ) {

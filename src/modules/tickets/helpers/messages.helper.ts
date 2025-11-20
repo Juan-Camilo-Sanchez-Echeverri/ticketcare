@@ -10,8 +10,9 @@ export const messageAssignTicket = (
   const lastName = user.lastName.split(' ')[0];
 
   const department = ticket?.supportDepartment?.name;
+  const deptText = department ? ` del departamento ${department}` : '';
 
-  return `${firstName} ${lastName} ${department ? `del departamento ${department}` : ''} ha tomado el ticket.`;
+  return `${firstName} ${lastName}${deptText} ha tomado el ticket.`;
 };
 
 export const messageTransferAgent = (
@@ -25,7 +26,10 @@ export const messageTransferAgent = (
   const firstNameUserAssigned = assignedUser.name.split(' ')[0];
   const lastNameUserAssigned = assignedUser.lastName.split(' ')[0];
 
-  return `${firstNameUserTransfer} ${lastNameUserTransfer} del departamento ${ticket?.supportDepartment?.name} ha transferido el ticket a ${firstNameUserAssigned} ${lastNameUserAssigned} del departamento ${ticket?.supportDepartment?.name}.`;
+  const oldDept = ticket?.supportDepartment?.name;
+  const oldDeptText = oldDept ? ` del departamento ${oldDept}` : '';
+
+  return `${firstNameUserTransfer} ${lastNameUserTransfer}${oldDeptText} ha transferido el ticket a ${firstNameUserAssigned} ${lastNameUserAssigned}${oldDeptText}.`;
 };
 
 export const messageTransferDepartment = (
@@ -38,5 +42,13 @@ export const messageTransferDepartment = (
 
   const departmentOldName = ticket?.supportDepartment?.name;
 
-  return `${firstName} ${lastName} del departamento ${departmentOldName} ha transferido el ticket al departamento ${department.name}.`;
+  const oldDeptText = departmentOldName
+    ? ` del departamento ${departmentOldName}`
+    : '';
+
+  const newDeptText = department?.name
+    ? ` al departamento ${department.name}`
+    : '';
+
+  return `${firstName} ${lastName}${oldDeptText} ha transferido el ticket${newDeptText}.`;
 };

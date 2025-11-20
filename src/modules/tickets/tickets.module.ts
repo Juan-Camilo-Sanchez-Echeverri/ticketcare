@@ -31,9 +31,9 @@ import { TicketsRepository } from './repositories/tickets.repository';
     UsersModule,
   ],
   controllers: [
+    TicketsListController,
     TicketsController,
     TicketsFilesController,
-    TicketsListController,
   ],
   providers: [TicketsService, TicketsRepository],
   exports: [TicketsService],
