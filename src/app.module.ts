@@ -31,6 +31,7 @@ import { TicketsModule } from '@modules/tickets/tickets.module';
 import { UsersModule } from '@modules/users/users.module';
 import { EmailModule } from '@modules/email/email.module';
 import { WhatsAppModule } from '@modules/whatsApp/whatsApp.module';
+import { MetricsModule } from '@modules/metrics/metrics.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { WhatsAppModule } from '@modules/whatsApp/whatsApp.module';
     TicketsModule,
     EmailModule,
     WhatsAppModule,
+    MetricsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
