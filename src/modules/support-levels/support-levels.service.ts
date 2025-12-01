@@ -19,7 +19,7 @@ import { SupportLevelsErrors } from './errors/support-levels.errors';
 export class SupportLevelsService
   implements ICrudService<SupportLevelDocument>
 {
-  constructor(private repository: SupportLevelsRepository) {}
+  constructor(private readonly repository: SupportLevelsRepository) {}
 
   async findOneById(id: string): Promise<SupportLevelDocument> {
     const supportLevel = await this.repository.findOneById(id);
@@ -36,7 +36,7 @@ export class SupportLevelsService
   ): Promise<SupportLevelDocument | null> {
     const level = await this.repository.findOne(query);
 
-    return level ? level : null;
+    return level ?? null;
   }
 
   async findPaginate(

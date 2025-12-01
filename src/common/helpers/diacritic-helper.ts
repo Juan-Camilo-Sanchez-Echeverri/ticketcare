@@ -1,8 +1,8 @@
 export const diacriticSensitiveRegex = (input: string): string => {
   return input
-    .replace(/a/gi, '[aáàäAÁÀÄ]')
-    .replace(/e/gi, '[eéëEÉË]')
-    .replace(/i/gi, '[iíïIÍÏ]')
-    .replace(/o/gi, '[oóöòOÓÖÒ]')
-    .replace(/u/gi, '[uüúùUÜÚÙ]');
+    .replaceAll(/a/gi, '[aáàäAÁÀÄ]')
+    .replaceAll(/e/gi, '[eéëEÉË]')
+    .replaceAll(/i/gi, '[iíïIÍÏ]')
+    .replaceAll(/o/gi, '[oóöòOÓÖÒ]')
+    .replaceAll(/u/gi, '[uüúùUÜÚÙ]');
 };

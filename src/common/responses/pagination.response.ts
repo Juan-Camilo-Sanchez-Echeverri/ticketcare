@@ -33,7 +33,7 @@ export class PaginationResponse<T> implements PaginateResult<T> {
   /**
    * The current page number.
    */
-  page?: number | undefined = 1;
+  page?: number = 1;
 
   /**
    * The total number of pages.

@@ -49,26 +49,28 @@ export class OwnUserGuard implements CanActivate {
     currentUser: UserDocument,
     targetUser: UserDocument,
   ) {
-    const currentUserContractorIds =
+    const currentUserContractorIds = new Set(
       currentUser.details.businessContractors.map((contractor) =>
         String(contractor._id),
-      );
+      ),
+    );
 
     return targetUser.details.businessClients?.some((client) =>
       client.businessContractors.some((contractor) =>
-        currentUserContractorIds.includes(String(contractor._id)),
+        currentUserContractorIds.has(String(contractor._id)),
       ),
     );
   }
 
   private isContractor(currentUser: UserDocument, targetUser: UserDocument) {
-    const currentUserContractorsIds =
+    const currentUserContractorsIds = new Set(
       currentUser.details.businessContractors.map((contractor) =>
         String(contractor._id),
-      );
+      ),
+    );
 
     return targetUser.details.businessContractors?.some((contractor) =>
-      currentUserContractorsIds.includes(String(contractor._id)),
+      currentUserContractorsIds.has(String(contractor._id)),
     );
   }
 }

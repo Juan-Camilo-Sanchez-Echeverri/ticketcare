@@ -17,11 +17,14 @@ import { emailConfig } from '../config';
 export class EmailNotificationService
   implements INotificationProvider<EmailPayload>
 {
-  private logger = new Logger(EmailNotificationService.name);
+  private readonly logger = new Logger(EmailNotificationService.name);
 
   async send(payload: EmailPayload): Promise<boolean> {
     try {
-      const transporter = nodemailer.createTransport(emailConfig.smtp);
+      const transporter = nodemailer.createTransport({
+        ...emailConfig.smtp,
+        secure: true,
+      });
 
       const mailOptions: Options = {
         from: emailConfig.smtp.auth.user,
@@ -33,7 +36,7 @@ export class EmailNotificationService
       const response = await transporter.sendMail(mailOptions);
 
       this.logger.debug(`Response: ${JSON.stringify(response)}`);
-      // return response.accepted === 202;
+
       return true;
     } catch (error) {
       this.logger.error('Error sending email:', error);

@@ -351,7 +351,7 @@ export class TicketsService {
     );
 
     for (const ticket of tickets) {
-      const lastActivity = ticket.activity[ticket.activity.length - 1];
+      const lastActivity = ticket.activity.at(-1)!;
 
       const dateLastActivity = new Date(lastActivity['updatedAt']);
 

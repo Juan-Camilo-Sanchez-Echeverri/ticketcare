@@ -5,7 +5,6 @@ import type { ResponseWhatsApp } from './interfaces';
 import { whatsAppApi } from './api';
 import { AxiosError } from 'axios';
 
-// TODO: Manejar logs(seguimiento) para detectar errores
 @Injectable()
 export class WhatsAppService {
   async send(body: object): Promise<boolean> {

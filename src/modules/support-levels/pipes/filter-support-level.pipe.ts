@@ -16,6 +16,7 @@ import { FilterSupportLevelDto } from '../dto';
 @Injectable()
 export class FilterSupportLevelPipe implements PipeTransform {
   constructor(@Inject(REQUEST) private readonly request: Request) {}
+
   transform(value: FilterSupportLevelDto): FilterSupportLevelDto {
     const name = String(value.data.name || '').trim();
     const description = String(value.data.description || '').trim();
@@ -24,18 +25,22 @@ export class FilterSupportLevelPipe implements PipeTransform {
 
     if (user.role !== UserRole.SuperUser) value.data.status = Status.ACTIVE;
 
-    if (name) {
-      const diacriticRegex = diacriticSensitiveRegex(name);
-      const regex = new RegExp(diacriticRegex, 'i');
-      value.data.name = regex;
-    }
+    const nameRegex = this.makeRegex(name);
+    if (nameRegex) value.data.name = nameRegex;
 
-    if (description) {
-      const diacriticRegex = diacriticSensitiveRegex(description);
-      const regex = new RegExp(diacriticRegex, 'i');
-      value.data.description = regex;
-    }
+    const descriptionRegex = this.makeRegex(description);
+    if (descriptionRegex) value.data.description = descriptionRegex;
 
     return value;
+  }
+
+  private makeRegex(value?: string): RegExp | undefined {
+    const v = String(value || '').trim();
+
+    if (!v) return undefined;
+
+    const diacriticRegex = diacriticSensitiveRegex(v);
+
+    return new RegExp(diacriticRegex, 'i');
   }
 }

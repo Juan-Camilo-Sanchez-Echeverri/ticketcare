@@ -10,7 +10,7 @@ export function IsNotBlank(validationOptions?: ValidationOptions) {
       validator: {
         validate(value: any) {
           if (typeof value !== 'string') return false;
-          const valueTrim = value.replace(/ /g, '');
+          const valueTrim = value.replaceAll(' ', '');
           if (valueTrim === '') return false;
           return true;
         },

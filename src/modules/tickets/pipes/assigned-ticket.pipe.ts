@@ -68,13 +68,11 @@ export class AssignedTicketPipe implements PipeTransform {
     const reqContractors = requestingUser.details.businessContractors.map(
       (bc) => String(bc._id),
     );
-    const assignedContractors = assignedUser.details.businessContractors.map(
-      (bc) => String(bc._id),
+    const assignedContractors = new Set(
+      assignedUser.details.businessContractors.map((bc) => String(bc._id)),
     );
 
-    const authorized = reqContractors.some((bc) =>
-      assignedContractors.includes(bc),
-    );
+    const authorized = reqContractors.some((bc) => assignedContractors.has(bc));
 
     if (!authorized) throw new ForbiddenException();
   }

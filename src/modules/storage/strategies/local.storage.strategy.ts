@@ -20,7 +20,7 @@ export class LocalStrategy implements IStorageStrategy {
     const ext = originalname ? path.extname(originalname) : '';
 
     const relPath = extFromPath
-      ? folder.replace(/^\/+/, '')
+      ? folder.replaceAll(/^\/+/, '')
       : generateFileNameAndPath(ext, folder);
 
     const fullPath = path.join(this.baseDirectory, relPath);
@@ -82,7 +82,7 @@ export class LocalStrategy implements IStorageStrategy {
   }
 
   getFileUrl(pathFile: string): string {
-    return `/${pathFile.replace(/\\/g, '/').replace(/^\/+/, '')}`;
+    return `/${pathFile.replaceAll('\\\\', '/').replaceAll(/^\/+/, '')}`;
   }
 
   private async deleteFolderRecursive(folderPath: string): Promise<void> {

@@ -59,19 +59,21 @@ export abstract class EntityRepository<T extends Document> {
   async findOneAndUpdate(
     filter: FilterQuery<T>,
     update: UpdateQuery<T>,
-    options: QueryOptions<T> = { new: true },
+    options?: QueryOptions<T>,
   ): Promise<T | null> {
     return await this.entityModel
-      .findOneAndUpdate(filter, update, options)
+      .findOneAndUpdate(filter, update, { ...options, new: true })
       .exec();
   }
 
   async findByIdAndUpdate(
     id: string,
     update: UpdateQuery<T>,
-    options: QueryOptions<T> = { new: true },
+    options?: QueryOptions<T>,
   ): Promise<T | null> {
-    return await this.entityModel.findByIdAndUpdate(id, update, options).exec();
+    return await this.entityModel
+      .findByIdAndUpdate(id, update, { ...options, new: true })
+      .exec();
   }
 
   async findOneAndDelete(filter: FilterQuery<T>): Promise<T | null> {

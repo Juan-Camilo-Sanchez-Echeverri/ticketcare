@@ -44,7 +44,7 @@ export class AuthGuard implements CanActivate {
 
     this.assignRequestUser(user, request);
 
-    return true;
+    return Boolean(request.user);
   }
 
   private isPublicRoute(context: ExecutionContext): boolean {

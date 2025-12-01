@@ -10,7 +10,7 @@ export const formatDate = (date: Date): string => {
   const minutes = date.getMinutes().toString().padStart(2, '0');
   const formatDate = hours >= 12 ? 'pm' : 'am';
   hours = hours % 12;
-  hours = hours ? hours : 12;
+  hours = hours ?? 12;
   const strHours = hours.toString().padStart(2, '0');
 
   return `${day}/${month}/${year} - ${strHours}:${minutes} ${formatDate}`;

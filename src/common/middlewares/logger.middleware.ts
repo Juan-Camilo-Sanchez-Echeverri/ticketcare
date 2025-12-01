@@ -11,7 +11,9 @@ import { LogService } from '@modules/log/log.service';
 export class LoggerMiddleware implements NestMiddleware {
   constructor(private readonly logService: LogService) {}
   use(req: Request, res: Response, next: NextFunction) {
-    if (envs.nodeEnv !== ExecModes.PROD) {
+    if (envs.nodeEnv === ExecModes.PROD) {
+      res.on('finish', () => this.logService.saveFileLog(req, res));
+    } else {
       console.log(
         '##########################################################################',
       );
@@ -22,8 +24,6 @@ export class LoggerMiddleware implements NestMiddleware {
       console.log('BODY:', req.body);
       console.log('QUERIES:', req.query);
       console.log('PARAMS:', req.params);
-    } else {
-      res.on('finish', () => this.logService.saveFileLog(req, res));
     }
 
     next();

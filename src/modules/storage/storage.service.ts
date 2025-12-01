@@ -62,12 +62,10 @@ export class StorageService {
   }
 
   private getStrategy(strategy: StorageStrategy): IStorageStrategy {
-    switch (strategy) {
-      case 'local':
-        return this.localStrategy;
-      default:
-        throw new NotImplementedException();
+    if (strategy === 'local') {
+      return this.localStrategy;
     }
+    throw new NotImplementedException();
   }
 
   private logAction(action: string, path: string, strategy: string) {

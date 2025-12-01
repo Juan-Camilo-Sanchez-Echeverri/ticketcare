@@ -69,7 +69,7 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
       const parsed = await simpleParser(message.source);
       await this.processEmailTicket(parsed);
 
-      await this.client.messageFlagsAdd(seq, ['\\Seen']);
+      await this.client.messageFlagsAdd(seq, [String.raw`\Seen`]);
     }
   }
 
@@ -80,10 +80,6 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
     const userName = email.from?.value[0]?.name || 'Usuario Desconocido';
     const subject = email.subject || 'Sin asunto';
     const text = email.textAsHtml ?? email.text ?? (email.html || '');
-
-    email.attachments.forEach((att) => {
-      this.logger.log(att);
-    });
 
     let user = await this.usersService.findOneByQuery({ email: emailFrom });
     let newPassword = '';
@@ -115,7 +111,8 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
     const multimedia = [];
 
     for (const att of email.attachments) {
-      const nameFile = att.filename?.replace(/[^\w.-]/g, '_') || randomUUID();
+      const nameFile =
+        att.filename?.replaceAll(/[^\w.-]/g, '_') || randomUUID();
 
       const folder = `uploads/${String(user._id)}/tickets/${String(ticket._id)}/evidence/${nameFile}`;
 
