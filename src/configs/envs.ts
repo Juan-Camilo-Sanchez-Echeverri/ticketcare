@@ -41,6 +41,7 @@ interface EnvVars {
   META_PHONE_NUMBER_ID: string;
   META_ACCESS_TOKEN: string;
   META_BASE_URL: string;
+  WEBHOOK_VERIFY_TOKEN: string;
 }
 
 const envSchema = joi
@@ -75,6 +76,7 @@ const envSchema = joi
     META_PHONE_NUMBER_ID: joi.string().required(),
     META_ACCESS_TOKEN: joi.string().required(),
     META_BASE_URL: joi.string().uri().required(),
+    WEBHOOK_VERIFY_TOKEN: joi.string().required(),
   })
   .unknown(true);
 
@@ -113,4 +115,5 @@ export const envs = {
   metaPhoneNumberId: envVars.META_PHONE_NUMBER_ID,
   metaAccessToken: envVars.META_ACCESS_TOKEN,
   metaBaseUrl: envVars.META_BASE_URL,
+  webhookVerifyToken: envVars.WEBHOOK_VERIFY_TOKEN,
 };
