@@ -220,7 +220,7 @@ El servidor se ejecutará en `http://localhost:<PORT>` donde `<PORT>` es el puer
 Una vez que la aplicación esté corriendo, puedes acceder a la documentación interactiva de Swagger en:
 
 ```
-http://localhost:<PORT>/swagger
+http://localhost:<PORT>/docs
 ```
 
 ## Licencia
